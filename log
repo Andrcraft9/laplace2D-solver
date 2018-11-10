@@ -1,0 +1,28 @@
+Laplace Solver
+M = 20 N = 20
+Time: 0.0049
+Resudial: 8.18856e-07
+Error (L2): 0.0401826
+Error (C): 0.00501841
+
+Laplace Solver
+M = 40 N = 40
+Time: 0.077644
+Resudial: 9.99598e-07
+Error (L2): 0.0198566
+Error (C): 0.00126196
+
+Laplace Solver
+M = 80 N = 80
+Time: 1.90459
+Resudial: 9.99324e-07
+Error (L2): 0.00985995
+Error (C): 0.000316232
+
+Laplace Solver
+M = 160 N = 160
+Time: 34.0072
+Resudial: 9.99956e-07
+Error (L2): 0.00490447
+Error (C): 7.91249e-05
+
