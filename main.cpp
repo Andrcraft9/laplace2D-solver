@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <ctime>
+#include <fstream>
 #include "mesh.hpp"
 #include "laplace.hpp"
 #include "solver.hpp"
@@ -43,6 +44,11 @@ int main(int argc, char** argv)
     std::cout << "Resudial: " << res << std::endl;
     std::cout << "Error (L2): " << L.errorL2(X) << std::endl;
     std::cout << "Error (C): " << L.errorC(X) << std::endl;
+
+    std::ofstream results;
+    results.open("results.txt");
+    results << X;
+    results.close();
 
     return 0;
 }
