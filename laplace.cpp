@@ -10,23 +10,29 @@ int LaplaceOperator::matvec(const MeshVec &v, MeshVec &Av) const
     // Edge point: (X1, Y1)
     i = 0; j = 0;
     Av(i, j) = -2.0/pow(hx,2)*(v(1,0) - v(0,0)) 
-                -2.0/pow(hy,2)*(v(0,1) - v(0,0));
+               -2.0/pow(hy,2)*(v(0,1) - v(0,0));
 
     // Bottom boundary
     j = 0;
-    for(i = 1; i <= M-1; ++i)
+    for(i = 1; i <= M-2; ++i)
     {
         Av(i, j) = -2.0/pow(hy,2)*(v(i,1) - v(i,0)) 
-                    -1.0/pow(hx,2)*(v(i+1,0) - 2*v(i,0) + v(i-1,0));
+                   -1.0/pow(hx,2)*(v(i+1,0) - 2*v(i,0) + v(i-1,0));
     }
+    i = M-1;
+    Av(i, j) = -2.0/pow(hy,2)*(v(M-1,1) - v(M-1,0)) 
+               -1.0/pow(hx,2)*( -2*v(M-1,0) + v(M-2,0));
 
     // Left boundary
     i = 0;
-    for(j = 1; j <= N-1; ++j)
+    for(j = 1; j <= N-2; ++j)
     {
         Av(i, j) = -2.0/pow(hx,2)*(v(1,j) - v(0,j))
-                    -1.0/pow(hy,2)*(v(0,j+1) - 2*v(0,j) + v(0,j-1));
+                   -1.0/pow(hy,2)*(v(0,j+1) - 2*v(0,j) + v(0,j-1));
     }
+    j = N-1;
+    Av(i, j) = -2.0/pow(hx,2)*(v(1,N-1) - v(0,N-1))
+               -1.0/pow(hy,2)*( -2*v(0,N-1) + v(0,N-2));
 
     // Inner area
     for(int i = 1; i <= M-2; ++i)
@@ -34,31 +40,32 @@ int LaplaceOperator::matvec(const MeshVec &v, MeshVec &Av) const
         for(int j = 1; j <= N-2; ++j)
         {
             Av(i, j) = -1.0/pow(hx,2)*(v(i+1,j) - 2*v(i,j) + v(i-1,j)) 
-                        -1.0/pow(hy,2)*(v(i,j+1) - 2*v(i,j) + v(i,j-1));
+                       -1.0/pow(hy,2)*(v(i,j+1) - 2*v(i,j) + v(i,j-1));
         }
     }
 
-    // Right boundary
+    // Right pre-boundary
     i = M-1;
     for(int j = 1; j <= N-2; ++j)
     {
-        Av(i, j) = -1.0/pow(hx,2)*(func_RBC(j) - 2*v(M-1,j) + v(M-2,j)) 
-                    -1.0/pow(hy,2)*(v(M-1,j+1)  - 2*v(M-1,j) + v(M-1,j-1));
+        Av(i, j) = -1.0/pow(hx,2)*( -2*v(M-1,j) + v(M-2,j)) 
+                   -1.0/pow(hy,2)*(v(M-1,j+1)  - 2*v(M-1,j) + v(M-1,j-1));
     }
 
-    // Top boundary
+    // Top pre-boundary
     j = N-1;
     for(int i = 1; i <= M-2; ++i)
     {
         Av(i, j) = -1.0/pow(hx,2)*(v(i+1,N-1)  - 2*v(i,N-1) + v(i-1,N-1)) 
-                    -1.0/pow(hy,2)*(func_TBC(i) - 2*v(i,N-1) + v(i,N-2));
+                   -1.0/pow(hy,2)*( -2*v(i,N-1) + v(i,N-2));
     }
 
     // Edge point: (X2, Y2)
     i = M-1; 
     j = N-1;
-    Av(i, j) = -1.0/pow(hx,2)*(func_RBC(j) - 2*v(M-1,N-1) + v(M-2,N-1)) 
-                -1.0/pow(hy,2)*(func_TBC(i) - 2*v(M-1,N-1) + v(M-1,N-2));
+    Av(i, j) = -1.0/pow(hx,2)*( -2*v(M-1,N-1) + v(M-2,N-1)) 
+               -1.0/pow(hy,2)*( -2*v(M-1,N-1) + v(M-1,N-2));
+
 
     return 0;
 }
@@ -75,17 +82,21 @@ int LaplaceOperator::rhs(MeshVec &f) const
 
     // Bottom boundary
     j = 0;
-    for(i = 1; i <= M-1; ++i)
+    for(i = 1; i <= M-2; ++i)
     {
         f(i, j) = func_F(i, 0) - 2.0/hy * func_BBC(i);
     }
+    i = M-1;
+    f(i, j) = func_F(M-1, 0) - 2.0/hy * func_BBC(M-1) + 1.0/pow(hx,2)*func_RBC(0) ;
 
     // Left boundary
     i = 0;
-    for(j = 1; j <= N-1; ++j)
+    for(j = 1; j <= N-2; ++j)
     {
         f(i ,j) = func_F(0, j) - 2.0/hx * func_LBC(j);
     }
+    j = N-1;
+    f(i ,j) = func_F(0, N-1) - 2.0/hx * func_LBC(N-1) + 1.0/pow(hy,2)*func_TBC(0);
 
     // Inner area
     for(int i = 1; i <= M-2; ++i)
@@ -100,20 +111,52 @@ int LaplaceOperator::rhs(MeshVec &f) const
     i = M-1;
     for(int j = 1; j <= N-2; ++j)
     {
-        f(i, j) = func_F(M-1, j);
+        f(i, j) = func_F(M-1, j) + 1.0/pow(hx, 2) * func_RBC(j);
     }
 
     // Top boundary
     j = N-1;
     for(int i = 1; i <= M-2; ++i)
     {
-        f(i, j) = func_F(i, N-1);
+        f(i, j) = func_F(i, N-1) + 1.0/pow(hy, 2) * func_TBC(i);
     }
 
     // Edge point: (X2, Y2)
     i = M-1; 
     j = N-1;
-    f(i, j) = func_F(M-1, N-1);
+    f(i, j) = func_F(M-1, N-1) + 1.0/pow(hx, 2) * func_RBC(j) + 1.0/pow(hy, 2) * func_TBC(i);
 
     return 0;
+}
+
+double LaplaceOperator::dot_mesh(const MeshVec& v1, const MeshVec& v2) const
+{
+    assert(M == v1.get_M() && N == v1.get_N()); 
+    assert(M == v2.get_M() && N == v2.get_N()); 
+    
+    double dot = 0.0;
+    int i, j;
+
+    // Edge point
+    /*
+    i = 0; j = 0;
+    dot = dot + 0.25*hx*hy*v1(i, j)*v2(i, j);
+
+    // Bottom boundary
+    j = 0;
+    for(i = 1; i <= M-1; ++i)
+        dot = dot + 0.5*hx*hy*v1(i, j)*v2(i, j);
+
+    // Left boundary
+    i = 0;
+    for(j = 1; j <= N-1; ++j)
+        dot = dot + 0.5*hx*hy*v1(i, j)*v2(i, j);
+    */
+
+    // Inner area
+    for(i = 1; i <= M-1; ++i)
+        for(j = 1; j <= N-1; ++j)
+            dot = dot + hx*hy*v1(i ,j)*v2(i, j);
+
+    return dot;
 }

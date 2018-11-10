@@ -9,8 +9,8 @@
 
 /*
 Laplace Operator: -L u = F
-
 Area: 2d rectangular [X1, X2] x [Y1, Y2]
+
           (T)
  Y2 xxxxxxxxxxxxxxx
     x             x
@@ -21,6 +21,7 @@ Area: 2d rectangular [X1, X2] x [Y1, Y2]
     x             x
  Y1 xxxxxxxxxxxxxxx
    X1     (B)     X2
+
 Mesh: i = 0, M; j = 0, N
 Uniform mesh!
 
@@ -30,11 +31,13 @@ B: Neumann
 R: Dirichlet
 T: Dirichlet
 
+MeshVec - mesh functions, always without T and R borders,
+size: M*N (because values on T and R borders are known from bc)
+
 Discrete Laplace Operator: A u = B,
 A  : M*N x M*N (because values on T and R borders are known from bc)
 u,B: M*N
 */
-
 class LaplaceOperator
 {
 private:
@@ -65,7 +68,7 @@ private:
         double x, y;
         x = point_x(i);
         y = point_y(j);
-        return cos(M_PI*x*y) * (pow(M_PI*x,2) + pow(M_PI*y, 2));
+        return cos(M_PI*x*y) * (pow(M_PI*x,2) + pow(M_PI*y,2));
     }
 
     // Left Boundary Condition
@@ -111,25 +114,38 @@ public:
         hy = (Y2 - Y1) / N;
 
         assert(func_BBC(0) == func_LBC(0));
+        assert(func_TBC(M) == func_RBC(N));
     }
 
     int matvec(const MeshVec &v, MeshVec &Av) const;
 
     int rhs(MeshVec &f) const;
 
-    double error(const MeshVec& sol) const
+    double dot_mesh(const MeshVec& v1, const MeshVec& v2) const;
+
+    double norm_mesh(const MeshVec& v) const
+    {
+        return sqrt(dot_mesh(v, v));
+    }
+
+    double errorL2(const MeshVec& sol) const
     {
         double err = 0.0;
-        for(int i = 1; i <= M-1; ++i)
-        {
-            for(int j = 1; j <= N-1; ++j)
-            {
-                err = pow((func_solution(i, j) - sol(i, j)), 2);
-            }
-        }
-
+        for(int i = 0; i <= M-1; ++i)
+            for(int j = 0; j <= N-1; ++j)
+                err = err +  pow((func_solution(i, j) - sol(i, j)), 2);
         return sqrt(err);
     }
+
+    double errorC(const MeshVec& sol) const
+    {
+        double err = 0.0;
+        for(int i = 0; i <= M-1; ++i)
+            for(int j = 0; j <= N-1; ++j)
+                if (fabs(func_solution(i, j) - sol(i, j)) > err) err = fabs(func_solution(i, j) - sol(i, j));           
+        return err;
+    }
+
 };
 
 #endif

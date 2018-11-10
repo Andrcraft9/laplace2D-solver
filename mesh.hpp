@@ -64,31 +64,14 @@ public:
     
     const double& operator()(int i, int j) const
     {
-        return vec[i + j*M];
+        //return vec[i + j*M];
+        return vec[j + i*N];
     }
 
     double& operator()(int i, int j)
     {
-        return vec[i + j*M];
-    }
-
-    double dot(const MeshVec& v) const
-    {
-        assert(M == v.M && N == v.N);
-        double d = 0.0;
-        for(int i = 0; i < M; ++i)
-        {
-            for(int j = 0; j < N; ++j)
-            {
-                d = d + (*this)(i, j)*v(i, j);
-            }
-        }
-        return d;
-    }
-
-    double norm() const
-    {
-        return sqrt(dot(*this));
+        //return vec[i + j*M];
+        return vec[j + i*N];
     }
 
     // y = a*x + y

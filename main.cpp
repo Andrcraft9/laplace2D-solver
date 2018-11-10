@@ -1,47 +1,48 @@
 #include <iostream>
 #include <string>
 #include <cassert>
+#include <cstdlib>
+#include <ctime>
 #include "mesh.hpp"
 #include "laplace.hpp"
 #include "solver.hpp"
 
-int main()
+int main(int argc, char** argv)
 {
     std::cout << "Laplace Solver" << std::endl;
+    if (argc < 4) 
+    {
+        std::cout << "Program needs M, N, maxiters" << std::endl;
+        exit(0);
+    }
+    int M = atoi(argv[1]), N = atoi(argv[2]), maxiters = atoi(argv[3]);
+    std::cout << "M = " << M << " N = " << N << std::endl;
 
-    int M, N, X1, X2, Y1, Y2;
-    M = 20; N = 20;
+    int X1, X2, Y1, Y2;
     X1 = 0; X2 = 2;
     Y1 = 0; Y2 = 1;
 
-    MeshVec v(M, N);
-    for(int i = 0; i < M; ++i)
-    {
-        for(int j = 0; j < N; ++j)
-        {
-            v(i, j) = 1.0;
-        }
-    }
-    //std::cout << "v: " << std::endl << v;
-
+    // Initiation of Laplace Operator, RHS for it
     LaplaceOperator L(X1, X2, Y1, Y2, M, N);
-    MeshVec Av(M, N); 
     MeshVec F(M, N);
-    L.matvec(v, Av); 
-    L.rhs(F);   
-    //std::cout << "Av: " << std::endl << Av;
-    //std::cout << "F: " << std::endl << F;
+    L.rhs(F);
 
-    int iters;
-    std::cin >> iters;
-    MRM solver(0.001, iters);
-    MeshVec X(M, N);
+    // Initiation of MRM solver Ax=b, initial guess
+    MRM solver(1.0e-6, maxiters);
+    MeshVec X(M, N, 0.0);
     
-    double err;
-    err = solver.solve(L, F, X);
-    std::cout << "Resudial: " << err << std::endl;
-    std::cout << "Error: " << L.error(X) << std::endl;
+    // Use solver
+    double res;
+    std::clock_t start, end;
+    start = std::clock();
+    res = solver.solve(L, F, X);
+    end = std::clock();
+    std::cout << "Time: " << (end - start) / (double) CLOCKS_PER_SEC << std::endl;
 
-    
+    // Print errors
+    std::cout << "Resudial: " << res << std::endl;
+    std::cout << "Error (L2): " << L.errorL2(X) << std::endl;
+    std::cout << "Error (C): " << L.errorC(X) << std::endl;
+
     return 0;
 }
