@@ -1,6 +1,8 @@
-CC = g++
-CFLAGS = -O3
+CC = mpic++
+CFLAGS = -O3 -fopenmp
 
 all:
-	$(CC) $(CFLAGS) -o lapsol main.cpp mesh.cpp laplace.cpp
+	$(CC) $(CFLAGS) -o lapsol main.cpp mesh.cpp
+#	$(CC) $(CFLAGS) -o lapsol main.cpp mesh.cpp laplace.cpp
+
 

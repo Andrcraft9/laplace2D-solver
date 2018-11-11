@@ -7,10 +7,15 @@ int LaplaceOperator::matvec(const MeshVec &v, MeshVec &Av) const
 
     int i, j;
 
+    int inner_x1 = max(1, mtls.locx1());
+    int inner_x2 = min(M-2, mtls.locx2())
+    int inner_y1 = max(1, mtls.locy1());
+    int inner_y2 = min(N-2, mtls.locy2());
+
     // Inner area
-    for(i = 1; i <= M-2; ++i)
+    for(i = inner_x1; i <= inner_x2; ++i)
     {
-        for(j = 1; j <= N-2; ++j)
+        for(j = inner_y1; j <= inner_y2; ++j)
         {
             Av(i, j) = -1.0/pow(hx,2)*(v(i+1,j) - 2*v(i,j) + v(i-1,j)) 
                        -1.0/pow(hy,2)*(v(i,j+1) - 2*v(i,j) + v(i,j-1));
@@ -18,54 +23,77 @@ int LaplaceOperator::matvec(const MeshVec &v, MeshVec &Av) const
     }
 
     // Edge point: (X1, Y1)
-    i = 0; j = 0;
-    Av(i, j) = -2.0/pow(hx,2)*(v(1,0) - v(0,0)) 
-               -2.0/pow(hy,2)*(v(0,1) - v(0,0));
+    if (mtls.LB() && mtls.BB())
+    {
+        i = 0; j = 0;
+        Av(i, j) = -2.0/pow(hx,2)*(v(1,0) - v(0,0)) 
+                   -2.0/pow(hy,2)*(v(0,1) - v(0,0));
+    }
 
     // Bottom boundary
-    j = 0;
-    for(i = 1; i <= M-2; ++i)
+    if (mtls.BB())
     {
-        Av(i, j) = -2.0/pow(hy,2)*(v(i,1) - v(i,0)) 
-                   -1.0/pow(hx,2)*(v(i+1,0) - 2*v(i,0) + v(i-1,0));
+        j = 0;
+        for(i = inner_x1; i <= inner_x2; ++i)
+        {
+            Av(i, j) = -2.0/pow(hy,2)*(v(i,1) - v(i,0)) 
+                       -1.0/pow(hx,2)*(v(i+1,0) - 2*v(i,0) + v(i-1,0));
+        }
+        if (mtls.RB())
+        {
+            i = M-1;
+            Av(i, j) = -2.0/pow(hy,2)*(v(M-1,1) - v(M-1,0)) 
+                       -1.0/pow(hx,2)*( -2*v(M-1,0) + v(M-2,0));
+        }
     }
-    i = M-1;
-    Av(i, j) = -2.0/pow(hy,2)*(v(M-1,1) - v(M-1,0)) 
-               -1.0/pow(hx,2)*( -2*v(M-1,0) + v(M-2,0));
 
     // Left boundary
-    i = 0;
-    for(j = 1; j <= N-2; ++j)
+    if (mtls.LB())
     {
-        Av(i, j) = -2.0/pow(hx,2)*(v(1,j) - v(0,j))
-                   -1.0/pow(hy,2)*(v(0,j+1) - 2*v(0,j) + v(0,j-1));
+        i = 0;
+        for(j = inner_y1; j <= inner_y2; ++j)
+        {
+            Av(i, j) = -2.0/pow(hx,2)*(v(1,j) - v(0,j))
+                       -1.0/pow(hy,2)*(v(0,j+1) - 2*v(0,j) + v(0,j-1));
+        }
+        if (mtls.TP())
+        {
+            j = N-1;
+            Av(i, j) = -2.0/pow(hx,2)*(v(1,N-1) - v(0,N-1))
+                       -1.0/pow(hy,2)*( -2*v(0,N-1) + v(0,N-2));
+        }
     }
-    j = N-1;
-    Av(i, j) = -2.0/pow(hx,2)*(v(1,N-1) - v(0,N-1))
-               -1.0/pow(hy,2)*( -2*v(0,N-1) + v(0,N-2));
 
     // Right pre-boundary
-    i = M-1;
-    for(j = 1; j <= N-2; ++j)
+    if (mtls.RB())
     {
-        Av(i, j) = -1.0/pow(hx,2)*( -2*v(M-1,j) + v(M-2,j)) 
-                   -1.0/pow(hy,2)*(v(M-1,j+1)  - 2*v(M-1,j) + v(M-1,j-1));
+        i = M-1;
+        for(j = inner_y1; j <= inner_y2; ++j)
+        {
+            Av(i, j) = -1.0/pow(hx,2)*( -2*v(M-1,j) + v(M-2,j)) 
+                       -1.0/pow(hy,2)*(v(M-1,j+1)  - 2*v(M-1,j) + v(M-1,j-1));
+        }
     }
 
     // Top pre-boundary
-    j = N-1;
-    for(i = 1; i <= M-2; ++i)
+    if (mtls.TB())
     {
-        Av(i, j) = -1.0/pow(hx,2)*(v(i+1,N-1)  - 2*v(i,N-1) + v(i-1,N-1)) 
-                   -1.0/pow(hy,2)*( -2*v(i,N-1) + v(i,N-2));
+        j = N-1;
+        for(i = inner_x1; i <= inner_x2; ++i)
+        {
+            Av(i, j) = -1.0/pow(hx,2)*(v(i+1,N-1)  - 2*v(i,N-1) + v(i-1,N-1)) 
+                       -1.0/pow(hy,2)*( -2*v(i,N-1) + v(i,N-2));
+        }
     }
 
     // Edge point: (X2, Y2)
-    i = M-1; 
-    j = N-1;
-    Av(i, j) = -1.0/pow(hx,2)*( -2*v(M-1,N-1) + v(M-2,N-1)) 
-               -1.0/pow(hy,2)*( -2*v(M-1,N-1) + v(M-1,N-2));
-
+    if (mtls.TB() && mtls.RB())
+    {
+        i = M-1; 
+        j = N-1;
+        Av(i, j) = -1.0/pow(hx,2)*( -2*v(M-1,N-1) + v(M-2,N-1)) 
+                   -1.0/pow(hy,2)*( -2*v(M-1,N-1) + v(M-1,N-2));
+    }
 
     return 0;
 }

@@ -2,6 +2,7 @@
 #include <string>
 #include <cassert>
 #include <cmath>
+#include "mpitools.hpp"
 
 #ifndef MESH_H
 #define MESH_H
@@ -9,109 +10,97 @@
 class MeshVec
 {
 private:
-    int M, N;
+    MPITools mtls;
     double *vec;
+    double *srcbuf, *distbuf;
+
+    int direct_sync(int src, int dist, double *sbuf, int sn, double *rbuf, int rn);
 
 public:
-    MeshVec(int m, int n, double val = 0) : M(m), N(n)
+    MeshVec(MPITools mtls, double val = 0) : mtls(mtls)
     {
-        assert(M > 0 && N > 0);
-        vec = new double[M*N];
+        assert(mtls.initialized());
 
-        for(int i = 0; i < M; ++i)
-        {
-            for(int j = 0; j < N; ++j)
-            {
+        vec = new double[mtls.bndM() * mtls.bndN()];
+        srcbuf = new double[max(mtls.bndM(), mtls.bndN())];
+        distbuf = new double[max(mtls.bndM(), mtls.bndN())];
+
+        for(int i = mtls.bndx1(); i <= mtls.bndx2(); ++i)
+            for(int j = mtls.bndy1(); j <= mtls.bndy2(); ++j)
                 (*this)(i, j) = val;
-            }
-        }
     } 
 
-    MeshVec(const MeshVec& v) : M(v.M), N(v.N)
+    MeshVec(const MeshVec& v) : mtls(v.mtls)
     {
-        vec = new double[M*N];
-        for(int i = 0; i < M; ++i)
-        {
-            for(int j = 0; j < N; ++j)
-            {
+        vec = new double[mtls.bndM() * mtls.bndN()];
+        srcbuf = new double[max(mtls.bndM(), mtls.bndN())];
+        distbuf = new double[max(mtls.bndM(), mtls.bndN())];
+
+        for(int i = mtls.bndx1(); i <= mtls.bndx2(); ++i)
+            for(int j = mtls.bndy1(); j <= mtls.bndy2(); ++j)
                 (*this)(i, j) = v(i, j);
-            }
-        }
     }
     
     MeshVec& operator=(const MeshVec& v)
     {
-        assert(M == v.M && N == v.N);
-        for(int i = 0; i < M; ++i)
-        {
-            for(int j = 0; j < N; ++j)
-            {
+        assert(mtls.M() == v.mtls.M() && mtls.N() == v.mtls.N());
+
+        for(int i = mtls.bndx1(); i <= mtls.bndx2(); ++i)
+            for(int j = mtls.bndy1(); j <= mtls.bndy2(); ++j)
                 (*this)(i, j) = v(i, j);
-            }
-        }
 
         return *this;
     }
+
+    int sync();
     
-    int get_M() const 
-    { 
-        return M;
-    }
-    int get_N() const 
-    { 
-        return N; 
-    }
+    MPITools get_mpitools() { return mtls; }
     
     const double& operator()(int i, int j) const
     {
         //return vec[i + j*M];
-        return vec[j + i*N];
+        // j + iN
+        return vec[(j - mtls.bndy1()) + (i - mtls.bndx1())*mtls.bndN()];
     }
 
     double& operator()(int i, int j)
     {
         //return vec[i + j*M];
-        return vec[j + i*N];
+        // j + iN
+        return vec[(j - mtls.bndy1()) + (i - mtls.bndx1())*mtls.bndN()];
     }
 
     // y = a*x + y
     MeshVec& axpy(double a, const MeshVec& x)
     {
-        assert(M == x.M && N == x.N);
-        for(int i = 0; i < M; ++i)
-        {
-            for(int j = 0; j < N; ++j)
-            {
+        assert(mtls.M() == x.mtls.M() && mtls.N() == x.mtls.N());
+
+        for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
+            for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
                 (*this)(i, j) = (*this)(i, j) + a*x(i, j);
-            }
-        }
 
         return *this;
     }
 
     MeshVec& operator+=(const MeshVec& v)
     {
-        assert(M == v.M && N == v.N);
-        for(int i = 0; i < M; ++i)
-        {
-            for(int j = 0; j < N; ++j)
-            {
+        assert(mtls.M() == v.mtls.M() && mtls.N() == v.mtls.N());
+
+        for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
+            for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
                 (*this)(i, j) = (*this)(i, j) + v(i, j);
-            }
-        }
+
         return *this;
     }
 
     MeshVec& operator-=(const MeshVec& v)
     {
-        assert(M == v.M && N == v.N);
-        for(int i = 0; i < M; ++i)
-        {
-            for(int j = 0; j < N; ++j)
-            {
+        assert(mtls.M() == v.mtls.M() && mtls.N() == v.mtls.N());
+
+        for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
+            for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
                 (*this)(i, j) = (*this)(i, j) - v(i, j);
-            }
-        }
+    
         return *this;
     }
 
@@ -120,6 +109,8 @@ public:
     ~MeshVec()
     {
         delete[] vec;
+        delete[] srcbuf;
+        delete[] distbuf;
     }
 };
 

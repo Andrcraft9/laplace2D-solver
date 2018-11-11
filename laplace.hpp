@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath> 
 #include "mesh.hpp"
+#include "mpitools.hpp"
 
 #ifndef LAPLACE_H
 #define LAPLACE_H
@@ -45,6 +46,7 @@ private:
     double Y1, Y2;
     double hx, hy;
     int M, N;
+    MPITools mtls;
 
     // No copy
     LaplaceOperator(const LaplaceOperator& l);
@@ -107,9 +109,13 @@ private:
     }
 
 public:
-    LaplaceOperator(double X1, double X2, double Y1, double Y2, int M, int N)
-        : X1(X1), X2(X2), Y1(Y1), Y2(Y2), M(M), N(N)
+    LaplaceOperator(double X1, double X2, double Y1, double Y2, MPITools mpitools)
+        : X1(X1), X2(X2), Y1(Y1), Y2(Y2), mtls(mpitools)
     {
+        assert(mtls.initialized());
+
+        M = mtls.M();
+        N = mtls.N();
         hx = (X2 - X1) / M;
         hy = (Y2 - Y1) / N;
 
@@ -131,8 +137,8 @@ public:
     double errorL2(const MeshVec& sol) const
     {
         double err = 0.0;
-        for(int i = 0; i <= M-1; ++i)
-            for(int j = 0; j <= N-1; ++j)
+        for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
+            for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
                 err = err +  pow((func_solution(i, j) - sol(i, j)), 2);
         return sqrt(err);
     }
@@ -140,8 +146,8 @@ public:
     double errorC(const MeshVec& sol) const
     {
         double err = 0.0;
-        for(int i = 0; i <= M-1; ++i)
-            for(int j = 0; j <= N-1; ++j)
+        for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
+            for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
                 if (fabs(func_solution(i, j) - sol(i, j)) > err) err = fabs(func_solution(i, j) - sol(i, j));           
         return err;
     }
