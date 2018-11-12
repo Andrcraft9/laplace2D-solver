@@ -76,7 +76,6 @@ private:
     {
         return 0;
     }
-
     // Right Boundary Condition
     double func_RBC(int j) const
     {
@@ -84,7 +83,6 @@ private:
         y = point_y(j);
         return 1.0 + cos(X2*M_PI*y);
     }
-
     // Top Boundary Condition
     double func_TBC(int i) const
     {
@@ -92,12 +90,13 @@ private:
         x = point_x(i);
         return 1.0 + cos(Y2*M_PI*x);
     }
-
     // Bottom Boundary Condition
     double func_BBC(int i) const
     {
         return 0;
     }
+
+    // Analytic solution of problem
     double func_solution(int i, int j) const
     {
         double x, y;
@@ -118,33 +117,16 @@ public:
     }
 
     int matvec(const MeshVec &v, MeshVec &Av) const;
-
     int rhs(MeshVec &f) const;
 
     double dot_mesh(const MeshVec& v1, const MeshVec& v2) const;
-
     double norm_mesh(const MeshVec& v) const
     {
         return sqrt(dot_mesh(v, v));
     }
 
-    double errorL2(const MeshVec& sol) const
-    {
-        double err = 0.0;
-        for(int i = 0; i <= M-1; ++i)
-            for(int j = 0; j <= N-1; ++j)
-                err = err +  pow((func_solution(i, j) - sol(i, j)), 2);
-        return sqrt(err);
-    }
-
-    double errorC(const MeshVec& sol) const
-    {
-        double err = 0.0;
-        for(int i = 0; i <= M-1; ++i)
-            for(int j = 0; j <= N-1; ++j)
-                if (fabs(func_solution(i, j) - sol(i, j)) > err) err = fabs(func_solution(i, j) - sol(i, j));           
-        return err;
-    }
+    double errorL2(const MeshVec& sol) const;
+    double errorC(const MeshVec& sol) const;
 
 };
 

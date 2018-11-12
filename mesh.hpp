@@ -53,14 +53,8 @@ public:
         return *this;
     }
     
-    int get_M() const 
-    { 
-        return M;
-    }
-    int get_N() const 
-    { 
-        return N; 
-    }
+    int get_M() const { return M; }
+    int get_N() const { return N; }
     
     const double& operator()(int i, int j) const
     {

@@ -19,11 +19,9 @@ int main(int argc, char** argv)
     int M = atoi(argv[1]), N = atoi(argv[2]), maxiters = atoi(argv[3]);
     std::cout << "M = " << M << " N = " << N << std::endl;
 
-    int X1, X2, Y1, Y2;
-    X1 = 0; X2 = 2;
-    Y1 = 0; Y2 = 1;
-
     // Initiation of Laplace Operator, RHS for it
+    int X1, X2, Y1, Y2;
+    X1 = 0; X2 = 2; Y1 = 0; Y2 = 1;
     LaplaceOperator L(X1, X2, Y1, Y2, M, N);
     MeshVec F(M, N);
     L.rhs(F);
@@ -33,15 +31,13 @@ int main(int argc, char** argv)
     MeshVec X(M, N, 0.0);
     
     // Use solver
-    double res;
     std::clock_t start, end;
     start = std::clock();
-    res = solver.solve(L, F, X);
+    solver.solve(L, F, X);
     end = std::clock();
     std::cout << "Time: " << (end - start) / (double) CLOCKS_PER_SEC << std::endl;
 
     // Print errors
-    std::cout << "Resudial: " << res << std::endl;
     std::cout << "Error (L2): " << L.errorL2(X) << std::endl;
     std::cout << "Error (C): " << L.errorC(X) << std::endl;
 

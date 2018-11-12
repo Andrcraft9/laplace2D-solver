@@ -160,3 +160,21 @@ double LaplaceOperator::dot_mesh(const MeshVec& v1, const MeshVec& v2) const
 
     return dot;
 }
+
+double LaplaceOperator::errorL2(const MeshVec& sol) const
+{
+    double err = 0.0;
+    for(int i = 0; i <= M-1; ++i)
+        for(int j = 0; j <= N-1; ++j)
+            err = err +  pow((func_solution(i, j) - sol(i, j)), 2);
+    return sqrt(err);
+}
+
+double LaplaceOperator::errorC(const MeshVec& sol) const
+{
+    double err = 0.0;
+    for(int i = 0; i <= M-1; ++i)
+        for(int j = 0; j <= N-1; ++j)
+            if (fabs(func_solution(i, j) - sol(i, j)) > err) err = fabs(func_solution(i, j) - sol(i, j));           
+    return err;
+}
