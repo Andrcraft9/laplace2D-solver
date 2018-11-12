@@ -7,8 +7,8 @@
 #include <sstream>
 
 #include "mesh.hpp"
-//#include "laplace.hpp"
-//#include "solver.hpp"
+#include "laplace.hpp"
+#include "solver.hpp"
 #include "mpitools.hpp"
 
 int main(int argc, char** argv)
@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     if (mpitools.rank() == 0) 
     {
         std::cout << "Laplace Solver, parallel mpi" << std::endl;
-        std::cout << "M = " << M << " N = " << N << std::endl;
+        std::cout << "M = " << M << " N = " << N << " maxiters = " << maxiters << std::endl;
     }
     //MPI_Abort(mpitools.comm(), 0);
     //exit(0);
@@ -36,37 +36,36 @@ int main(int argc, char** argv)
     X1 = 0; X2 = 2;
     Y1 = 0; Y2 = 1;
 
-    MeshVec X(mpitools, 0.0);
-
-    /*
     // Initiation of Laplace Operator, RHS for it
-    LaplaceOperator L(X1, X2, Y1, Y2, M, N);
-    MeshVec F(M, N);
+    LaplaceOperator L(X1, X2, Y1, Y2, mpitools);
+    MeshVec F(mpitools);
     L.rhs(F);
 
     // Initiation of MRM solver Ax=b, initial guess
     MRM solver(1.0e-6, maxiters);
-    MeshVec X(M, N, 0.0);
+    MeshVec X(mpitools, 0.0);
     
     // Use solver
     double res;
-    std::clock_t start, end;
-    start = std::clock();
+    double start, duration;
+    start = mpitools.start_timer();
     res = solver.solve(L, F, X);
-    end = std::clock();
+    duration = mpitools.end_timer(start);
     if (mpitools.rank() == 0) 
     {
-        std::cout << "Time: " << (end - start) / (double) CLOCKS_PER_SEC << std::endl;
+        std::cout << "Time: " << duration << std::endl;
     }
 
     // Print errors
+    double errL2, errC;
+    errL2 =  L.errorL2(X);
+    errC = L.errorC(X);
     if (mpitools.rank() == 0) 
     {
         std::cout << "Resudial: " << res << std::endl;
-        std::cout << "Error (L2): " << L.errorL2(X) << std::endl;
-        std::cout << "Error (C): " << L.errorC(X) << std::endl;
+        std::cout << "Error (L2): " << errL2 << std::endl;
+        std::cout << "Error (C): " << errC << std::endl;
     }
-    */
 
     std::stringstream ss;
     ss << mpitools.rank();

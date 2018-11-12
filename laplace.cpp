@@ -2,15 +2,10 @@
 
 int LaplaceOperator::matvec(const MeshVec &v, MeshVec &Av) const
 {
-    assert(M == v.get_M()  && N == v.get_N()); 
-    assert(M == Av.get_M() && N == Av.get_N()); 
+    assert(M == v.mpitools().M()  && N == v.mpitools().N()); 
+    assert(M == Av.mpitools().M() && N == Av.mpitools().N()); 
 
     int i, j;
-
-    int inner_x1 = max(1, mtls.locx1());
-    int inner_x2 = min(M-2, mtls.locx2())
-    int inner_y1 = max(1, mtls.locy1());
-    int inner_y2 = min(N-2, mtls.locy2());
 
     // Inner area
     for(i = inner_x1; i <= inner_x2; ++i)
@@ -56,7 +51,7 @@ int LaplaceOperator::matvec(const MeshVec &v, MeshVec &Av) const
             Av(i, j) = -2.0/pow(hx,2)*(v(1,j) - v(0,j))
                        -1.0/pow(hy,2)*(v(0,j+1) - 2*v(0,j) + v(0,j-1));
         }
-        if (mtls.TP())
+        if (mtls.TB())
         {
             j = N-1;
             Av(i, j) = -2.0/pow(hx,2)*(v(1,N-1) - v(0,N-1))
@@ -100,69 +95,93 @@ int LaplaceOperator::matvec(const MeshVec &v, MeshVec &Av) const
 
 int LaplaceOperator::rhs(MeshVec &f) const
 {
-    assert(M == f.get_M()  && N == f.get_N()); 
+    assert(M == f.mpitools().M()  && N == f.mpitools().N()); 
 
     int i, j;
 
     // Inner area
-    for(i = 1; i <= M-2; ++i)
+    for(i = inner_x1; i <= inner_x2; ++i)
     {
-        for(j = 1; j <= N-2; ++j)
+        for(j = inner_y1; j <= inner_y2; ++j)
         {
             f(i, j) = func_F(i, j);
         }
     }
 
     // Edge point: (X1, Y1)
-    i = 0; j = 0;
-    f(i, j) = func_F(0, 0) - (2.0/hx + 2.0/hy)*func_BBC(0);
+    if (mtls.LB() && mtls.BB())
+    {
+        i = 0; j = 0;
+        f(i, j) = func_F(0, 0) - (2.0/hx + 2.0/hy)*func_BBC(0);
+    }
 
     // Bottom boundary
-    j = 0;
-    for(i = 1; i <= M-2; ++i)
+    if (mtls.BB())
     {
-        f(i, j) = func_F(i, 0) - 2.0/hy * func_BBC(i);
+        j = 0;
+        for(i = inner_x1; i <= inner_x2; ++i)
+        {
+            f(i, j) = func_F(i, 0) - 2.0/hy * func_BBC(i);
+        }
+        if (mtls.RB())
+        {
+            i = M-1;
+            f(i, j) = func_F(M-1, 0) - 2.0/hy * func_BBC(M-1) + 1.0/pow(hx,2)*func_RBC(0);
+        }        
     }
-    i = M-1;
-    f(i, j) = func_F(M-1, 0) - 2.0/hy * func_BBC(M-1) + 1.0/pow(hx,2)*func_RBC(0) ;
 
     // Left boundary
-    i = 0;
-    for(j = 1; j <= N-2; ++j)
+    if (mtls.LB())
     {
-        f(i ,j) = func_F(0, j) - 2.0/hx * func_LBC(j);
+        i = 0;
+        for(j = inner_y1; j <= inner_y2; ++j)
+        {
+            f(i ,j) = func_F(0, j) - 2.0/hx * func_LBC(j);
+        }
+        if (mtls.TB())
+        {
+            j = N-1;
+            f(i ,j) = func_F(0, N-1) - 2.0/hx * func_LBC(N-1) + 1.0/pow(hy,2)*func_TBC(0);
+        }
     }
-    j = N-1;
-    f(i ,j) = func_F(0, N-1) - 2.0/hx * func_LBC(N-1) + 1.0/pow(hy,2)*func_TBC(0);
 
     // Right pre-boundary
-    i = M-1;
-    for(j = 1; j <= N-2; ++j)
+    if (mtls.RB())
     {
-        f(i, j) = func_F(M-1, j) + 1.0/pow(hx, 2) * func_RBC(j);
+        i = M-1;
+        for(j = inner_y1; j <= inner_y2; ++j)
+        {
+            f(i, j) = func_F(M-1, j) + 1.0/pow(hx, 2) * func_RBC(j);
+        }
     }
 
     // Top pre-boundary
-    j = N-1;
-    for(i = 1; i <= M-2; ++i)
+    if (mtls.TB())
     {
-        f(i, j) = func_F(i, N-1) + 1.0/pow(hy, 2) * func_TBC(i);
+        j = N-1;
+        for(i = inner_x1; i <= inner_x2; ++i)
+        {
+            f(i, j) = func_F(i, N-1) + 1.0/pow(hy, 2) * func_TBC(i);
+        }
     }
 
     // Edge point: (X2, Y2)
-    i = M-1; 
-    j = N-1;
-    f(i, j) = func_F(M-1, N-1) + 1.0/pow(hx, 2) * func_RBC(j) + 1.0/pow(hy, 2) * func_TBC(i);
+    if (mtls.TB() && mtls.RB())
+    {
+        i = M-1; 
+        j = N-1;
+        f(i, j) = func_F(M-1, N-1) + 1.0/pow(hx, 2) * func_RBC(j) + 1.0/pow(hy, 2) * func_TBC(i);
+    }
 
     return 0;
 }
 
 double LaplaceOperator::dot_mesh(const MeshVec& v1, const MeshVec& v2) const
 {
-    assert(M == v1.get_M() && N == v1.get_N()); 
-    assert(M == v2.get_M() && N == v2.get_N()); 
+    assert(M == v1.mpitools().M() && N == v1.mpitools().N()); 
+    assert(M == v2.mpitools().M() && N == v2.mpitools().N()); 
     
-    double dot = 0.0;
+    double dot = 0.0, dot_out = 0.0;
     int i, j;
 
     // Edge point
@@ -182,9 +201,11 @@ double LaplaceOperator::dot_mesh(const MeshVec& v1, const MeshVec& v2) const
     */
 
     // Inner area
-    for(i = 1; i <= M-1; ++i)
-        for(j = 1; j <= N-1; ++j)
+    for(i = inner_x1; i <= mtls.locx2(); ++i)
+        for(j = inner_y1; j <= mtls.locy2(); ++j)
             dot = dot + hx*hy*v1(i ,j)*v2(i, j);
 
-    return dot;
+    MPI_Allreduce(&dot, &dot_out, 1, MPI_DOUBLE, MPI_SUM, mtls.comm());
+
+    return dot_out;
 }

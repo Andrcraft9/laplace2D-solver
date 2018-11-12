@@ -12,7 +12,7 @@ class MeshVec
 private:
     MPITools mtls;
     double *vec;
-    double *srcbuf, *distbuf;
+    double *sendbuf, *recvbuf;
 
     int direct_sync(int src, int dist, double *sbuf, int sn, double *rbuf, int rn);
 
@@ -22,8 +22,8 @@ public:
         assert(mtls.initialized());
 
         vec = new double[mtls.bndM() * mtls.bndN()];
-        srcbuf = new double[max(mtls.bndM(), mtls.bndN())];
-        distbuf = new double[max(mtls.bndM(), mtls.bndN())];
+        sendbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
+        recvbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
 
         for(int i = mtls.bndx1(); i <= mtls.bndx2(); ++i)
             for(int j = mtls.bndy1(); j <= mtls.bndy2(); ++j)
@@ -33,8 +33,8 @@ public:
     MeshVec(const MeshVec& v) : mtls(v.mtls)
     {
         vec = new double[mtls.bndM() * mtls.bndN()];
-        srcbuf = new double[max(mtls.bndM(), mtls.bndN())];
-        distbuf = new double[max(mtls.bndM(), mtls.bndN())];
+        sendbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
+        recvbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
 
         for(int i = mtls.bndx1(); i <= mtls.bndx2(); ++i)
             for(int j = mtls.bndy1(); j <= mtls.bndy2(); ++j)
@@ -54,7 +54,7 @@ public:
 
     int sync();
     
-    MPITools get_mpitools() { return mtls; }
+    const MPITools& mpitools() const { return mtls; }
     
     const double& operator()(int i, int j) const
     {
@@ -109,8 +109,8 @@ public:
     ~MeshVec()
     {
         delete[] vec;
-        delete[] srcbuf;
-        delete[] distbuf;
+        delete[] sendbuf;
+        delete[] recvbuf;
     }
 };
 

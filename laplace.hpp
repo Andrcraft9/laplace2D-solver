@@ -46,6 +46,10 @@ private:
     double Y1, Y2;
     double hx, hy;
     int M, N;
+    int inner_x1;
+    int inner_x2;
+    int inner_y1;
+    int inner_y2;
     MPITools mtls;
 
     // No copy
@@ -119,9 +123,16 @@ public:
         hx = (X2 - X1) / M;
         hy = (Y2 - Y1) / N;
 
+        inner_x1 = std::max(1, mtls.locx1());
+        inner_x2 = std::min(M-2, mtls.locx2());
+        inner_y1 = std::max(1, mtls.locy1());
+        inner_y2 = std::min(N-2, mtls.locy2());
+
         assert(func_BBC(0) == func_LBC(0));
         assert(func_TBC(M) == func_RBC(N));
     }
+
+    MPITools mpitools() const { return mtls; }
 
     int matvec(const MeshVec &v, MeshVec &Av) const;
 
@@ -136,20 +147,25 @@ public:
 
     double errorL2(const MeshVec& sol) const
     {
-        double err = 0.0;
+        double err = 0.0, err_out = 0.0;
         for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
             for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
                 err = err +  pow((func_solution(i, j) - sol(i, j)), 2);
-        return sqrt(err);
+
+        MPI_Allreduce(&err, &err_out, 1, MPI_DOUBLE, MPI_SUM, mtls.comm());
+        return sqrt(err_out);
     }
 
     double errorC(const MeshVec& sol) const
     {
-        double err = 0.0;
+        double err = 0.0, err_out = 0.0;
         for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
             for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
                 if (fabs(func_solution(i, j) - sol(i, j)) > err) err = fabs(func_solution(i, j) - sol(i, j));           
-        return err;
+
+        MPI_Allreduce(&err, &err_out, 1, MPI_DOUBLE, MPI_MAX, mtls.comm());
+
+        return err_out;
     }
 
 };

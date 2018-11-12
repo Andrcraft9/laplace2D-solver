@@ -1,28 +1,33 @@
-Laplace Solver
-M = 20 N = 20
-Time: 0.0049
-Resudial: 8.18856e-07
-Error (L2): 0.0401826
-Error (C): 0.00501841
+MPI/OpenMP init is ok. procs = 4 threads = 1
+npx = 2 npy = 2 locM = 10 locN = 10
+Laplace Solver, parallel mpi
+M = 20 N = 20 maxiters = 100000
+Time: 0.00922608
+Resudial: 9.82307e-07
+Error (L2): 0.0401815
+Error (C): 0.00501846
 
-Laplace Solver
-M = 40 N = 40
-Time: 0.077644
-Resudial: 9.99598e-07
+
+MPI/OpenMP init is ok. procs = 4 threads = 1
+M = 40 N = 40 maxiters = 100000
+Time: 0.132114
+Resudial: 9.99392e-07
 Error (L2): 0.0198566
 Error (C): 0.00126196
 
-Laplace Solver
-M = 80 N = 80
-Time: 1.90459
-Resudial: 9.99324e-07
-Error (L2): 0.00985995
+MPI/OpenMP init is ok. procs = 4 threads = 1
+Laplace Solver, parallel mpi
+M = 80 N = 80 maxiters = 100000
+Time: 1.79814
+Resudial: 9.99961e-07
+Error (L2): 0.00985994
 Error (C): 0.000316232
 
-Laplace Solver
-M = 160 N = 160
-Time: 34.0072
-Resudial: 9.99956e-07
+MPI/OpenMP init is ok. procs = 4 threads = 1
+Laplace Solver, parallel mpi
+M = 160 N = 160 maxiters = 1000000
+Time: 23.4337
+Resudial: 9.99992e-07
 Error (L2): 0.00490447
 Error (C): 7.91249e-05
 
