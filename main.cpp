@@ -46,10 +46,9 @@ int main(int argc, char** argv)
     MeshVec X(mpitools, 0.0);
     
     // Use solver
-    double res;
     double start, duration;
     start = mpitools.start_timer();
-    res = solver.solve(L, F, X);
+    solver.solve(L, F, X);
     duration = mpitools.end_timer(start);
     if (mpitools.rank() == 0) 
     {
@@ -62,7 +61,6 @@ int main(int argc, char** argv)
     errC = L.errorC(X);
     if (mpitools.rank() == 0) 
     {
-        std::cout << "Resudial: " << res << std::endl;
         std::cout << "Error (L2): " << errL2 << std::endl;
         std::cout << "Error (C): " << errC << std::endl;
     }

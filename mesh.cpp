@@ -25,7 +25,6 @@ int MeshVec::direct_sync(int src, int dist, double *sbuf, int sn, double *rbuf, 
     return 0;
 }
 
-
 int MeshVec::sync()
 {
     int src[4], dist[4];

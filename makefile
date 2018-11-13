@@ -2,6 +2,6 @@ CC = mpic++
 CFLAGS = -O3 -fopenmp
 
 all:
-	$(CC) $(CFLAGS) -o lapsol main.cpp mesh.cpp laplace.cpp
+	$(CC) $(CFLAGS) -o lapsol main.cpp mpitools.cpp mesh.cpp laplace.cpp solver.cpp
 
 

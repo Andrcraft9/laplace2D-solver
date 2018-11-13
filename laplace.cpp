@@ -209,3 +209,26 @@ double LaplaceOperator::dot_mesh(const MeshVec& v1, const MeshVec& v2) const
 
     return dot_out;
 }
+
+double LaplaceOperator::errorL2(const MeshVec& sol) const
+{
+    double err = 0.0, err_out = 0.0;
+    for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
+        for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
+            err = err +  pow((func_solution(i, j) - sol(i, j)), 2);
+
+    MPI_Allreduce(&err, &err_out, 1, MPI_DOUBLE, MPI_SUM, mtls.comm());
+    return sqrt(err_out);
+}
+
+double LaplaceOperator::errorC(const MeshVec& sol) const
+{
+    double err = 0.0, err_out = 0.0;
+    for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
+        for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
+            if (fabs(func_solution(i, j) - sol(i, j)) > err) err = fabs(func_solution(i, j) - sol(i, j));           
+
+    MPI_Allreduce(&err, &err_out, 1, MPI_DOUBLE, MPI_MAX, mtls.comm());
+
+    return err_out;
+}

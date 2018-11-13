@@ -2,32 +2,34 @@ MPI/OpenMP init is ok. procs = 4 threads = 1
 npx = 2 npy = 2 locM = 10 locN = 10
 Laplace Solver, parallel mpi
 M = 20 N = 20 maxiters = 100000
-Time: 0.00922608
-Resudial: 9.82307e-07
+MRM: iters: 500 resudial: 9.82307e-07
+Time: 0.00938606
 Error (L2): 0.0401815
 Error (C): 0.00501846
 
-
 MPI/OpenMP init is ok. procs = 4 threads = 1
+npx = 2 npy = 2 locM = 20 locN = 20
+Laplace Solver, parallel mpi
 M = 40 N = 40 maxiters = 100000
-Time: 0.132114
-Resudial: 9.99392e-07
+MRM: iters: 4443 resudial: 9.99392e-07
+Time: 0.124171
 Error (L2): 0.0198566
 Error (C): 0.00126196
 
 MPI/OpenMP init is ok. procs = 4 threads = 1
+npx = 2 npy = 2 locM = 40 locN = 40
 Laplace Solver, parallel mpi
 M = 80 N = 80 maxiters = 100000
-Time: 1.79814
-Resudial: 9.99961e-07
+MRM: iters: 32814 resudial: 9.99961e-07
+Time: 1.67448
 Error (L2): 0.00985994
 Error (C): 0.000316232
 
 MPI/OpenMP init is ok. procs = 4 threads = 1
+npx = 2 npy = 2 locM = 80 locN = 80
 Laplace Solver, parallel mpi
 M = 160 N = 160 maxiters = 1000000
-Time: 23.4337
-Resudial: 9.99992e-07
+MRM: iters: 153236 resudial: 9.99992e-07
+Time: 22.0683
 Error (L2): 0.00490447
 Error (C): 7.91249e-05
-

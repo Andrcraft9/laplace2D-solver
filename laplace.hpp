@@ -61,7 +61,7 @@ private:
         //assert(i >= 0 && i <= M);
         return X1 + i*hx;
     }
-
+    
     double point_y(int j) const
     {
         //assert(j >= 0 && j <= N);
@@ -82,7 +82,6 @@ private:
     {
         return 0;
     }
-
     // Right Boundary Condition
     double func_RBC(int j) const
     {
@@ -90,7 +89,6 @@ private:
         y = point_y(j);
         return 1.0 + cos(X2*M_PI*y);
     }
-
     // Top Boundary Condition
     double func_TBC(int i) const
     {
@@ -98,12 +96,13 @@ private:
         x = point_x(i);
         return 1.0 + cos(Y2*M_PI*x);
     }
-
     // Bottom Boundary Condition
     double func_BBC(int i) const
     {
         return 0;
     }
+
+    // Analytic solution
     double func_solution(int i, int j) const
     {
         double x, y;
@@ -135,38 +134,16 @@ public:
     MPITools mpitools() const { return mtls; }
 
     int matvec(const MeshVec &v, MeshVec &Av) const;
-
     int rhs(MeshVec &f) const;
 
     double dot_mesh(const MeshVec& v1, const MeshVec& v2) const;
-
     double norm_mesh(const MeshVec& v) const
     {
         return sqrt(dot_mesh(v, v));
     }
 
-    double errorL2(const MeshVec& sol) const
-    {
-        double err = 0.0, err_out = 0.0;
-        for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
-            for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
-                err = err +  pow((func_solution(i, j) - sol(i, j)), 2);
-
-        MPI_Allreduce(&err, &err_out, 1, MPI_DOUBLE, MPI_SUM, mtls.comm());
-        return sqrt(err_out);
-    }
-
-    double errorC(const MeshVec& sol) const
-    {
-        double err = 0.0, err_out = 0.0;
-        for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
-            for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
-                if (fabs(func_solution(i, j) - sol(i, j)) > err) err = fabs(func_solution(i, j) - sol(i, j));           
-
-        MPI_Allreduce(&err, &err_out, 1, MPI_DOUBLE, MPI_MAX, mtls.comm());
-
-        return err_out;
-    }
+    double errorL2(const MeshVec& sol) const;
+    double errorC(const MeshVec& sol) const;
 
 };
 
