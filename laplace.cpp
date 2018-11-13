@@ -154,8 +154,8 @@ double LaplaceOperator::dot_mesh(const MeshVec& v1, const MeshVec& v2) const
     */
 
     // Inner area
-    for(i = 1; i <= M-1; ++i)
-        for(j = 1; j <= N-1; ++j)
+    for(i = 0; i <= M-1; ++i)
+        for(j = 0; j <= N-1; ++j)
             dot = dot + hx*hy*v1(i ,j)*v2(i, j);
 
     return dot;
