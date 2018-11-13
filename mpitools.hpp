@@ -3,7 +3,12 @@
 #include <cassert>
 #include <ctime>
 #include <mpi.h>
-#include <omp.h>
+
+#ifdef _OPENMP
+   #include <omp.h>
+#else
+   #define omp_get_num_threads() 1
+#endif
 
 #ifndef MPITOOLS_H
 #define MPITOOLS_H
@@ -38,6 +43,8 @@ public:
     MPITools() : initialized_(false) {}
     
     int init(int *argc, char ***argv, int m, int n);
+
+    bool operator==(const MPITools &m) const;
 
     // Getters
     bool initialized() const { return initialized_; }
