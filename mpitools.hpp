@@ -4,12 +4,6 @@
 #include <ctime>
 #include <mpi.h>
 
-#ifdef _OPENMP
-   #include <omp.h>
-#else
-   #define omp_get_num_threads() 1
-#endif
-
 #ifndef MPITOOLS_H
 #define MPITOOLS_H
 

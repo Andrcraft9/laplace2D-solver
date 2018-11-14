@@ -25,7 +25,6 @@ public:
         sendbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
         recvbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
 
-        #pragma omp parallel for collapse(2)
         for(int i = mtls.bndx1(); i <= mtls.bndx2(); ++i)
             for(int j = mtls.bndy1(); j <= mtls.bndy2(); ++j)
                 (*this)(i, j) = val;
@@ -37,7 +36,6 @@ public:
         sendbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
         recvbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
 
-        #pragma omp parallel for collapse(2)
         for(int i = mtls.bndx1(); i <= mtls.bndx2(); ++i)
             for(int j = mtls.bndy1(); j <= mtls.bndy2(); ++j)
                 (*this)(i, j) = v(i, j);
@@ -47,7 +45,6 @@ public:
     {
         assert(mtls == v.mtls);
 
-        #pragma omp parallel for collapse(2)
         for(int i = mtls.bndx1(); i <= mtls.bndx2(); ++i)
             for(int j = mtls.bndy1(); j <= mtls.bndy2(); ++j)
                 (*this)(i, j) = v(i, j);
@@ -78,7 +75,6 @@ public:
     {
         assert(mtls == x.mtls);
 
-        #pragma omp parallel for collapse(2)
         for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
             for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
                 (*this)(i, j) = (*this)(i, j) + a*x(i, j);
@@ -91,7 +87,6 @@ public:
     {
         assert(mtls == v.mtls);
 
-        #pragma omp parallel for collapse(2)
         for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
             for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
                 (*this)(i, j) = (*this)(i, j) + v(i, j);
@@ -103,7 +98,6 @@ public:
     {
         assert(mtls == v.mtls);
 
-        #pragma omp parallel for collapse(2)
         for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
             for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
                 (*this)(i, j) = (*this)(i, j) - v(i, j);

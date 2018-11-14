@@ -22,14 +22,8 @@ int MPITools::init(int *argc, char ***argv, int m, int n)
     MPI_Comm_size(comm_, &procs_);
     MPI_Comm_rank(comm_, &rank_);
     MPI_Cart_coords(comm_, rank_, 2, p_coord);
-
-    // OpenMP
-    #pragma omp parallel
-    {
-        threads_ = omp_get_num_threads();
-        //num_thread = omp_get_thread_num()
-        //if (num_thread .eq. 0) print *, "OMP Threads: ", count_threads
-    }
+   
+    threads_ = 1;
 
     npx_ = p_size[0];
     npy_ = p_size[1];
@@ -63,7 +57,7 @@ int MPITools::init(int *argc, char ***argv, int m, int n)
     // Info 
     if (rank_ == 0)
     {
-        std::cout << "MPI/OpenMP init is ok. procs = " << procs_ << " threads = " << threads_ << std::endl;
+        std::cout << "MPI init is ok. procs = " << procs_ << " threads = " << threads_ << std::endl;
         std::cout << "npx = " << npx_ << " npy = " << npy_ << " locM = " << locM_ << " locN = " << locN_ << std::endl;
     }
     /*

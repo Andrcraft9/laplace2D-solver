@@ -43,49 +43,41 @@ int MeshVec::sync()
     dist[3] = src[1];
 
     // X+ direction
-    //#pragma omp parallel for
     for(int j = 0; j < mtls.locN(); ++j)
         sendbuf[j] = (*this)(mtls.locx2(), j + mtls.locy1());
     direct_sync(src[0], dist[0], sendbuf,  mtls.locN(), recvbuf,  mtls.locN());
     if (src[0] != MPI_PROC_NULL)
     {
-        //#pragma omp parallel for
         for(int j = 0; j < mtls.locN(); ++j)
             (*this)(mtls.bndx1(), j + mtls.locy1()) = recvbuf[j];
     }
 
     // Y+ direction
-    //#pragma omp parallel for
     for(int i = 0; i < mtls.locM(); ++i)
         sendbuf[i] = (*this)(mtls.locx1() + i, mtls.locy2());
     direct_sync(src[1], dist[1], sendbuf,  mtls.locM(), recvbuf,  mtls.locM());
     if (src[1] != MPI_PROC_NULL)
     {
-        //#pragma omp parallel for
         for(int i = 0; i < mtls.locM(); ++i)
             (*this)(mtls.locx1() + i, mtls.bndy1()) = recvbuf[i];
     }
 
     // X- direction
-    //#pragma omp parallel for
     for(int j = 0; j < mtls.locN(); ++j)
         sendbuf[j] = (*this)(mtls.locx1(), j + mtls.locy1());
     direct_sync(src[2], dist[2], sendbuf,  mtls.locN(), recvbuf,  mtls.locN());
     if (src[2] != MPI_PROC_NULL)
     {
-        //#pragma omp parallel for
         for(int j = 0; j < mtls.locN(); ++j)
             (*this)(mtls.bndx2(), j + mtls.locy1()) = recvbuf[j];
     }
 
     // Y- direction
-    //#pragma omp parallel for
     for(int i = 0; i < mtls.locM(); ++i)
         sendbuf[i] = (*this)(mtls.locx1() + i, mtls.locy1());
     direct_sync(src[3], dist[3], sendbuf,  mtls.locM(), recvbuf,  mtls.locM());
     if (src[3] != MPI_PROC_NULL)
     {
-        //#pragma omp parallel for
         for(int i = 0; i < mtls.locM(); ++i)
             (*this)(mtls.locx1() + i, mtls.bndy2()) = recvbuf[i];
     }

@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 
     if (mpitools.rank() == 0) 
     {
-        std::cout << "Laplace Solver, parallel mpi" << std::endl;
+        std::cout << "Laplace Solver, pure mpi" << std::endl;
         std::cout << "M = " << M << " N = " << N << " maxiters = " << maxiters << std::endl;
     }
     //MPI_Abort(mpitools.comm(), 0);
