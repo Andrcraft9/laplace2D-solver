@@ -7,6 +7,7 @@
 #include "mesh.hpp"
 #include "laplace.hpp"
 #include "solver.hpp"
+#include <stdio.h>
 
 int main(int argc, char** argv)
 {
@@ -32,14 +33,23 @@ int main(int argc, char** argv)
     
     // Use solver
     std::clock_t start, end;
+    int iters;
     start = std::clock();
-    solver.solve(L, F, X);
+    iters = solver.solve(L, F, X);
     end = std::clock();
     std::cout << "Time: " << (end - start) / (double) CLOCKS_PER_SEC << std::endl;
 
     // Print errors
+    double errL2, errC;
+    errL2 =  L.errorL2(X);
+    errC =  L.errorC(X);
     std::cout << "Error (L2): " << L.errorL2(X) << std::endl;
     std::cout << "Error (C): " << L.errorC(X) << std::endl;
+    
+    // Latex Output
+    printf("Cores & Threads per core &   Mesh  & Time (sec) & Iterations & Error (L2) & Error (C) \n");
+    printf("%d & %d & %d x %d & %f & %d & %f & %f \n", 
+            1, 1, M, N, (end - start) / (double) CLOCKS_PER_SEC , iters, errL2, errC);
 
     std::ofstream results;
     results.open("results.txt");

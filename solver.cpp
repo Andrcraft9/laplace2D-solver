@@ -27,5 +27,5 @@ int MRM::solve(const LaplaceOperator& L, const MeshVec& RHS, MeshVec& X) const
     std::cout << "MRM: iters: " << k << " resudial: " << err << std::endl;
     if (k >= maxIters) std::cout << "MRM: Warning! Max Iterations in MRM solver!" << std::endl;
     
-    return 0;
+    return k;
 }
