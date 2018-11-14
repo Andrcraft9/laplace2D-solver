@@ -5,6 +5,7 @@
 #include <ctime>
 #include <fstream>
 #include <sstream>
+#include <stdio.h>
 
 #include "mesh.hpp"
 #include "laplace.hpp"
@@ -47,8 +48,9 @@ int main(int argc, char** argv)
     
     // Use solver
     double start, duration;
+    int iters;
     start = mpitools.start_timer();
-    solver.solve(L, F, X);
+    iters = solver.solve(L, F, X);
     duration = mpitools.end_timer(start);
     if (mpitools.rank() == 0) 
     {
@@ -63,6 +65,10 @@ int main(int argc, char** argv)
     {
         std::cout << "Error (L2): " << errL2 << std::endl;
         std::cout << "Error (C): " << errC << std::endl;
+        // Latex Output
+        printf("Cores & Threads per core &   Mesh  & Time (sec) & Iterations & Error (L2) & Error (C) \n");
+        printf("%d & %d & %d x %d & %f & %d & %f & %f \n", 
+               mpitools.procs(), mpitools.threads(), M, N, duration, iters, errL2, errC);
     }
 
     std::stringstream ss;

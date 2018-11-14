@@ -29,5 +29,5 @@ int MRM::solve(const LaplaceOperator& L, const MeshVec& RHS, MeshVec& X) const
     if (k >= maxIters && L.mpitools().rank() == 0) 
         std::cout << "MRM: Warning! Max Iterations in MRM solver!" << std::endl;
     
-    return 0;
+    return k;
 }
