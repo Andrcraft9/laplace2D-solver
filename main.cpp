@@ -14,12 +14,12 @@
 
 int main(int argc, char** argv)
 {
-    if (argc < 4) 
+    if (argc < 5) 
     {
-        std::cout << "Program needs M, N, maxiters" << std::endl;
+        std::cout << "Program needs M, N, maxiters, tol power" << std::endl;
         exit(0);
     }
-    int M = atoi(argv[1]), N = atoi(argv[2]), maxiters = atoi(argv[3]);
+    int M = atoi(argv[1]), N = atoi(argv[2]), maxiters = atoi(argv[3]), tol = atoi(argv[4]);
 
     // MPI/OpenMP
     MPITools mpitools;
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     if (mpitools.rank() == 0) 
     {
         std::cout << "Laplace Solver, pure mpi" << std::endl;
-        std::cout << "M = " << M << " N = " << N << " maxiters = " << maxiters << std::endl;
+        std::cout << "M = " << M << " N = " << N << " maxiters = " << maxiters << " tol = " << pow(10.0, tol) << std::endl;
     }
     //MPI_Abort(mpitools.comm(), 0);
     //exit(0);
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     L.rhs(F);
 
     // Initiation of MRM solver Ax=b, initial guess
-    MRM solver(1.0e-6, maxiters);
+    MRM solver(pow(10.0, tol), maxiters);
     MeshVec X(mpitools, 0.0);
     
     // Use solver
