@@ -7,10 +7,8 @@ int LaplaceOperator::matvec(const MeshVec &v, MeshVec &Av) const
 
     int i, j;
 
-#pragma omp parallel
-{
     // Inner area
-    #pragma omp for collapse(2) schedule(static)
+    #pragma omp parallel for collapse(2)
     for(i = inner_x1; i <= inner_x2; ++i)
         for(j = inner_y1; j <= inner_y2; ++j)
         {
@@ -30,7 +28,7 @@ int LaplaceOperator::matvec(const MeshVec &v, MeshVec &Av) const
     if (mtls.BB())
     {
         j = 0;
-        #pragma omp for schedule(static)
+        #pragma omp parallel for
         for(i = inner_x1; i <= inner_x2; ++i)
         {
             Av(i, j) = -2.0/pow (hy,2)*(v(i,1) - v(i,0)) 
@@ -48,7 +46,7 @@ int LaplaceOperator::matvec(const MeshVec &v, MeshVec &Av) const
     if (mtls.LB())
     {
         i = 0;
-        #pragma omp for schedule(static)
+        #pragma omp parallel for 
         for(j = inner_y1; j <= inner_y2; ++j)
         {
             Av(i, j) = -2.0/pow(hx,2)*(v(1,j) - v(0,j))
@@ -66,7 +64,7 @@ int LaplaceOperator::matvec(const MeshVec &v, MeshVec &Av) const
     if (mtls.RB())
     {
         i = M-1;
-        #pragma omp for schedule(static)
+        #pragma omp parallel for 
         for(j = inner_y1; j <= inner_y2; ++j)
         {
             Av(i, j) = -1.0/pow(hx,2)*( -2*v(M-1,j) + v(M-2,j)) 
@@ -78,7 +76,7 @@ int LaplaceOperator::matvec(const MeshVec &v, MeshVec &Av) const
     if (mtls.TB())
     {
         j = N-1;
-        #pragma omp for schedule(static)
+        #pragma omp parallel for 
         for(i = inner_x1; i <= inner_x2; ++i)
         {
             Av(i, j) = -1.0/pow(hx,2)*(v(i+1,N-1)  - 2*v(i,N-1) + v(i-1,N-1)) 
@@ -94,7 +92,7 @@ int LaplaceOperator::matvec(const MeshVec &v, MeshVec &Av) const
         Av(i, j) = -1.0/pow(hx,2)*( -2*v(M-1,N-1) + v(M-2,N-1)) 
                    -1.0/pow(hy,2)*( -2*v(M-1,N-1) + v(M-1,N-2));
     }
-}
+
     return 0;
 }
 
@@ -104,10 +102,8 @@ int LaplaceOperator::rhs(MeshVec &f) const
 
     int i, j;
 
-#pragma omp parallel
-{
     // Inner area
-    #pragma for collapse(2) schedule(static)
+    #pragma omp parallel for collapse(2) 
     for(i = inner_x1; i <= inner_x2; ++i)
         for(j = inner_y1; j <= inner_y2; ++j)
         {
@@ -125,7 +121,7 @@ int LaplaceOperator::rhs(MeshVec &f) const
     if (mtls.BB())
     {
         j = 0;
-        #pragma omp for schedule(static)
+        #pragma omp parallel for 
         for(i = inner_x1; i <= inner_x2; ++i)
         {
             f(i, j) = func_F(i, 0) - 2.0/hy * func_BBC(i);
@@ -141,7 +137,7 @@ int LaplaceOperator::rhs(MeshVec &f) const
     if (mtls.LB())
     {
         i = 0;
-        #pragma omp for schedule(static)
+        #pragma omp parallel for 
         for(j = inner_y1; j <= inner_y2; ++j)
         {
             f(i ,j) = func_F(0, j) - 2.0/hx * func_LBC(j);
@@ -157,7 +153,7 @@ int LaplaceOperator::rhs(MeshVec &f) const
     if (mtls.RB())
     {
         i = M-1;
-        #pragma omp for schedule(static)
+        #pragma omp parallel for 
         for(j = inner_y1; j <= inner_y2; ++j)
         {
             f(i, j) = func_F(M-1, j) + 1.0/pow(hx, 2) * func_RBC(j);
@@ -168,7 +164,7 @@ int LaplaceOperator::rhs(MeshVec &f) const
     if (mtls.TB())
     {
         j = N-1;
-        #pragma omp for schedule(static)
+        #pragma omp parallel for 
         for(i = inner_x1; i <= inner_x2; ++i)
         {
             f(i, j) = func_F(i, N-1) + 1.0/pow(hy, 2) * func_TBC(i);
@@ -211,7 +207,7 @@ double LaplaceOperator::dot_mesh(const MeshVec& v1, const MeshVec& v2) const
     */
 
     // Inner area
-    #pragma omp parallel for reduction(+ : dot) collapse(2) schedule(static)
+    #pragma omp parallel for reduction(+ : dot) collapse(2) 
     for(i = mtls.locx1(); i <= mtls.locx2(); ++i)
         for(j = mtls.locy1(); j <= mtls.locy2(); ++j)
             dot = dot + hx*hy*v1(i ,j)*v2(i, j);
@@ -224,7 +220,7 @@ double LaplaceOperator::dot_mesh(const MeshVec& v1, const MeshVec& v2) const
 double LaplaceOperator::errorL2(const MeshVec& sol) const
 {
     double err = 0.0, err_out = 0.0;
-    #pragma omp parallel for reduction(+ : err) collapse(2) schedule(static)
+    #pragma omp parallel for reduction(+ : err) collapse(2) 
     for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
         for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
             err = err +  pow((func_solution(i, j) - sol(i, j)), 2);
