@@ -70,7 +70,7 @@ int main(int argc, char** argv)
         printf("%d & %d & %d x %d & %f & %d & %f & %f \n", 
                mpitools.procs(), mpitools.threads(), M, N, duration, iters, errL2, errC);
     }
-
+    
     std::stringstream ss;
     ss << mpitools.rank();
     std::string strrank = ss.str();
