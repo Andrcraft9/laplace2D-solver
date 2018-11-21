@@ -178,7 +178,7 @@ int LaplaceOperator::rhs(MeshVec &f) const
         j = N-1;
         f(i, j) = func_F(M-1, N-1) + 1.0/pow(hx, 2) * func_RBC(j) + 1.0/pow(hy, 2) * func_TBC(i);
     }
-}
+
     return 0;
 }
 
