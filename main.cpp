@@ -19,6 +19,9 @@ int main(int argc, char** argv)
         std::cout << "Program needs M, N, maxiters, tol power" << std::endl;
         exit(0);
     }
+    int profile = 0;
+    if (argc >= 6) profile = atoi(argv[5]);
+
     int M = atoi(argv[1]), N = atoi(argv[2]), maxiters = atoi(argv[3]), tol = atoi(argv[4]);
 
     // MPI/OpenMP
@@ -28,7 +31,7 @@ int main(int argc, char** argv)
     if (mpitools.rank() == 0) 
     {
         std::cout << "Laplace Solver, pure mpi" << std::endl;
-        std::cout << "M = " << M << " N = " << N << " maxiters = " << maxiters << " tol = " << pow(10.0, tol) << std::endl;
+        std::cout << "M = " << M << " N = " << N << " maxiters = " << maxiters << " tol = " << pow(10.0, tol) << " profile = " << profile << std::endl;
     }
     //MPI_Abort(mpitools.comm(), 0);
     //exit(0);
@@ -49,12 +52,21 @@ int main(int argc, char** argv)
     // Use solver
     double start, duration;
     int iters;
-    start = mpitools.start_timer();
-    iters = solver.solve(L, F, X);
-    duration = mpitools.end_timer(start);
+    start = mpitools.get_time();
+    if (profile)
+    {
+        iters = solver.profile_solve(L, F, X);
+    }
+    else
+    {
+        iters = solver.solve(L, F, X);
+    }
+    duration = mpitools.get_time() - start;
+    double maxduration = mpitools.sync_time(duration);
     if (mpitools.rank() == 0) 
     {
-        std::cout << "Time: " << duration << std::endl;
+        std::cout << "Time of solver: " << duration << std::endl;
+        std::cout << "Time of solver (max): " << maxduration << std::endl;
     }
 
     // Print errors

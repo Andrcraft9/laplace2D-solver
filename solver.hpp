@@ -23,6 +23,7 @@ public:
     MRM(double eps, int maxiters) : eps(eps), maxIters(maxiters) {}
 
     int solve(const LaplaceOperator& L, const MeshVec& RHS, MeshVec& X) const;
+    int profile_solve(const LaplaceOperator& L, const MeshVec& RHS, MeshVec& X) const;
 };
 
 #endif
