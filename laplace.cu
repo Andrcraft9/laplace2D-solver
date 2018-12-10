@@ -383,7 +383,6 @@ void LaplaceOperator::matvec_device(const MeshVec &v, const MeshVec &f, MeshVec 
     assert(mtls == f.mpitools()); 
     assert(mtls == Av.mpitools()); 
 
-/*
     // CUDA Kernel matvec
     const double *raw_ptr_v = thrust::raw_pointer_cast(v.get_device_vec().data());
     const double *raw_ptr_f = thrust::raw_pointer_cast(f.get_device_vec().data());
@@ -397,8 +396,8 @@ void LaplaceOperator::matvec_device(const MeshVec &v, const MeshVec &f, MeshVec 
                                          M, N,
                                          inner_x1, inner_x2, inner_y1, inner_y2,
                                          mtls.bndx1(), mtls.bndy1());
-*/
 
+/*
     // Thrust transform matvec
     struct matvec_functor mvfunc(v.get_device_vec(), f.get_device_vec(), 
                                  hx, hy, M, N,
@@ -409,7 +408,7 @@ void LaplaceOperator::matvec_device(const MeshVec &v, const MeshVec &f, MeshVec 
                       thrust::make_counting_iterator(0), 
                       Av.get_device_vec().begin(),
                       mvfunc);
-
+*/
 
     //cudaDeviceSynchronize();
 }
