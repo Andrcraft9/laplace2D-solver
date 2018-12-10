@@ -1,5 +1,16 @@
 #include "mesh.hpp"
 
+MeshVec& MeshVec::axpy(double a, const MeshVec& x)
+{
+    assert(mtls == x.mtls);
+
+    for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
+        for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
+            (*this)(i, j) = (*this)(i, j) + a*x(i, j);
+            
+    return *this;
+}
+
 int MeshVec::direct_sync(int src, int dist, double *sbuf, int sn, double *rbuf, int rn)
 {
     if (src != MPI_PROC_NULL && dist != MPI_PROC_NULL)

@@ -75,15 +75,14 @@ public:
     bool TB() const { return TB_; }
     bool BB() const { return BB_; }
 
-    double start_timer()
+    double get_time()
     {
         return MPI_Wtime();
     }
 
-    double end_timer(double stime)
+    double sync_time(double t)
     {
-        double t, tout;
-        t = MPI_Wtime() - stime;
+        double tout;
         MPI_Allreduce(&t, &tout, 1, MPI_DOUBLE, MPI_MAX, comm_);
         return tout;
     }

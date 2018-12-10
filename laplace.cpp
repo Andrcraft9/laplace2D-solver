@@ -180,29 +180,12 @@ double LaplaceOperator::dot_mesh(const MeshVec& v1, const MeshVec& v2) const
     double dot = 0.0, dot_out = 0.0;
     int i, j;
 
-    // Edge point
-    /*
-    i = 0; j = 0;
-    dot = dot + 0.25*hx*hy*v1(i, j)*v2(i, j);
-
-    // Bottom boundary
-    j = 0;
-    for(i = 1; i <= M-1; ++i)
-        dot = dot + 0.5*hx*hy*v1(i, j)*v2(i, j);
-
-    // Left boundary
-    i = 0;
-    for(j = 1; j <= N-1; ++j)
-        dot = dot + 0.5*hx*hy*v1(i, j)*v2(i, j);
-    */
-
     // Inner area
     for(i = mtls.locx1(); i <= mtls.locx2(); ++i)
         for(j = mtls.locy1(); j <= mtls.locy2(); ++j)
             dot = dot + hx*hy*v1(i ,j)*v2(i, j);
 
     MPI_Allreduce(&dot, &dot_out, 1, MPI_DOUBLE, MPI_SUM, mtls.comm());
-
     return dot_out;
 }
 
@@ -225,6 +208,5 @@ double LaplaceOperator::errorC(const MeshVec& sol) const
             if (fabs(func_solution(i, j) - sol(i, j)) > err) err = fabs(func_solution(i, j) - sol(i, j));           
 
     MPI_Allreduce(&err, &err_out, 1, MPI_DOUBLE, MPI_MAX, mtls.comm());
-
     return err_out;
 }

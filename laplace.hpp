@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <vector>
 #include <cassert>
 #include <cmath> 
 #include "mesh.hpp"
@@ -38,6 +39,12 @@ size: M*N (because values on T and R borders are known from bc)
 Discrete Laplace Operator: A u = B,
 A  : M*N x M*N (because values on T and R borders are known from bc)
 u,B: M*N
+
+// CUDA/MPI version. 
+// For all class members:
+// member() - apply on host data
+// member_device() - apply on device data
+
 */
 class LaplaceOperator
 {
@@ -56,6 +63,7 @@ private:
     LaplaceOperator(const LaplaceOperator& l);
     LaplaceOperator& operator=(const LaplaceOperator& l);
 
+public:
     double point_x(int i) const
     {
         //assert(i >= 0 && i <= M);
@@ -67,7 +75,7 @@ private:
         //assert(j >= 0 && j <= N);
         return Y1 + j*hy;
     }
-    
+
     // Right hand side
     double func_F(int i, int j) const
     {
@@ -111,7 +119,6 @@ private:
         return 1.0 + cos(M_PI*x*y);
     }
 
-public:
     LaplaceOperator(double X1, double X2, double Y1, double Y2, MPITools mpitools)
         : X1(X1), X2(X2), Y1(Y1), Y2(Y2), mtls(mpitools)
     {
@@ -133,18 +140,18 @@ public:
 
     MPITools mpitools() const { return mtls; }
 
+    // Host functions
     int matvec(const MeshVec &v, MeshVec &Av) const;
     int rhs(MeshVec &f) const;
-
     double dot_mesh(const MeshVec& v1, const MeshVec& v2) const;
-    double norm_mesh(const MeshVec& v) const
-    {
-        return sqrt(dot_mesh(v, v));
-    }
-
+    double norm_mesh(const MeshVec& v) const { return sqrt(dot_mesh(v, v)); }
     double errorL2(const MeshVec& sol) const;
     double errorC(const MeshVec& sol) const;
 
+    // Device functions
+    std::vector<double> dot_general_mesh_device(const MeshVec& v1, const MeshVec& v2) const;
+    // Compute: Av - f
+    void matvec_device(const MeshVec &v, const MeshVec &f, MeshVec &Av) const;
 };
 
 #endif

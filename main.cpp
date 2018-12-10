@@ -7,10 +7,10 @@
 #include <sstream>
 #include <stdio.h>
 
+#include "mpitools.hpp"
 #include "mesh.hpp"
 #include "laplace.hpp"
 #include "solver.hpp"
-#include "mpitools.hpp"
 
 int main(int argc, char** argv)
 {
@@ -21,14 +21,15 @@ int main(int argc, char** argv)
     }
     int M = atoi(argv[1]), N = atoi(argv[2]), maxiters = atoi(argv[3]), tol = atoi(argv[4]);
 
-    // MPI/OpenMP
+    // MPI
     MPITools mpitools;
     mpitools.init(&argc, &argv, M, N);
 
     if (mpitools.rank() == 0) 
     {
-        std::cout << "Laplace Solver, pure mpi" << std::endl;
+        std::cout << "Laplace Solver, MPI/CUDA" << std::endl;
         std::cout << "M = " << M << " N = " << N << " maxiters = " << maxiters << " tol = " << pow(10.0, tol) << std::endl;
+        std::cout << "Profile version" << std::endl;
     }
     //MPI_Abort(mpitools.comm(), 0);
     //exit(0);
@@ -41,21 +42,26 @@ int main(int argc, char** argv)
     LaplaceOperator L(X1, X2, Y1, Y2, mpitools);
     MeshVec F(mpitools);
     L.rhs(F);
+    F.load_gpu();
 
     // Initiation of MRM solver Ax=b, initial guess
     MRM solver(pow(10.0, tol), maxiters);
     MeshVec X(mpitools, 0.0);
+    X.load_gpu();
     
     // Use solver
     double start, duration;
     int iters;
-    start = mpitools.start_timer();
-    iters = solver.solve(L, F, X);
-    duration = mpitools.end_timer(start);
+    start = mpitools.get_time();
+    iters = solver.solve_profile(L, F, X);
+    duration = mpitools.get_time() - start;
     if (mpitools.rank() == 0) 
     {
         std::cout << "Time: " << duration << std::endl;
     }
+
+    // Unload solution from GPU
+    X.unload_gpu();
 
     // Print errors
     double errL2, errC;
@@ -71,6 +77,7 @@ int main(int argc, char** argv)
                mpitools.procs(), mpitools.threads(), M, N, duration, iters, errL2, errC);
     }
 
+/* Output
     std::stringstream ss;
     ss << mpitools.rank();
     std::string strrank = ss.str();
@@ -80,8 +87,8 @@ int main(int argc, char** argv)
     results.open(fname.c_str());
     results << X;
     results.close();
+*/
 
     mpitools.finalize();
-
     return 0;
 }

@@ -4,24 +4,31 @@
 #include <cmath>
 #include "mpitools.hpp"
 
+#include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
+
 #ifndef MESH_H
 #define MESH_H
 
+// CUDA/MPI version. 
+// For all class members:
+// member() - apply on host data
+// member_device() - apply on device data
 class MeshVec
 {
 private:
     MPITools mtls;
-    double *vec;
+    thrust::host_vector<double> vec; // host data
+    thrust::device_vector<double> vec_device; // device data
     double *sendbuf, *recvbuf;
 
     int direct_sync(int src, int dist, double *sbuf, int sn, double *rbuf, int rn);
 
 public:
-    MeshVec(MPITools mtls, double val = 0) : mtls(mtls)
+    MeshVec(MPITools mtls, double val = 0) : mtls(mtls), vec(mtls.bndM() * mtls.bndN())
     {
         assert(mtls.initialized());
 
-        vec = new double[mtls.bndM() * mtls.bndN()];
         sendbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
         recvbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
 
@@ -30,9 +37,8 @@ public:
                 (*this)(i, j) = val;
     } 
 
-    MeshVec(const MeshVec& v) : mtls(v.mtls)
+    MeshVec(const MeshVec& v) : mtls(v.mtls), vec(mtls.bndM() * mtls.bndN())
     {
-        vec = new double[mtls.bndM() * mtls.bndN()];
         sendbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
         recvbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
 
@@ -52,8 +58,20 @@ public:
         return *this;
     }
 
+    // From CPU to GPU
+    void load_gpu() { vec_device = vec; }
+    // From GPU to CPU
+    void unload_gpu() { vec = vec_device; }
+    // From CPU to another CPU
     int sync();
     
+    // host vec
+    thrust::host_vector<double>& get_host_vec() { return vec; }
+    const thrust::host_vector<double>& get_host_vec() const { return vec; }
+    // device vec
+    thrust::device_vector<double>& get_device_vec() { return vec_device; }
+    const thrust::device_vector<double>& get_device_vec() const { return vec_device; }
+
     const MPITools& mpitools() const { return mtls; }
     
     const double& operator()(int i, int j) const
@@ -70,46 +88,15 @@ public:
         return vec[(j - mtls.bndy1()) + (i - mtls.bndx1())*mtls.bndN()];
     }
 
-    // y = a*x + y
-    MeshVec& axpy(double a, const MeshVec& x)
-    {
-        assert(mtls == x.mtls);
-
-        for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
-            for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
-                (*this)(i, j) = (*this)(i, j) + a*x(i, j);
-                
-
-        return *this;
-    }
-
-    MeshVec& operator+=(const MeshVec& v)
-    {
-        assert(mtls == v.mtls);
-
-        for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
-            for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
-                (*this)(i, j) = (*this)(i, j) + v(i, j);
-
-        return *this;
-    }
-
-    MeshVec& operator-=(const MeshVec& v)
-    {
-        assert(mtls == v.mtls);
-
-        for(int i = mtls.locx1(); i <= mtls.locx2(); ++i)
-            for(int j = mtls.locy1(); j <= mtls.locy2(); ++j)
-                (*this)(i, j) = (*this)(i, j) - v(i, j);
-    
-        return *this;
-    }
+    // y = a*x + y, host function
+    MeshVec& axpy(double a, const MeshVec& x);
+    // y = a*x + y, device function
+    MeshVec& axpy_device(double a, const MeshVec& x);
 
     friend std::ostream& operator<< (std::ostream& os, const MeshVec& v);
 
     ~MeshVec()
     {
-        delete[] vec;
         delete[] sendbuf;
         delete[] recvbuf;
     }
