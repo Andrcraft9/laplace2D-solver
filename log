@@ -1,35 +1,53 @@
-MPI/OpenMP init is ok. procs = 4 threads = 1
-npx = 2 npy = 2 locM = 10 locN = 10
-Laplace Solver, parallel mpi
-M = 20 N = 20 maxiters = 100000
-MRM: iters: 500 resudial: 9.82307e-07
-Time: 0.00938606
-Error (L2): 0.0401815
-Error (C): 0.00501846
+MPI init is ok. procs = 4 threads = 1
+npx = 2 npy = 2 locM = 512 locN = 512
+Laplace Solver, MPI/CUDA
+M = 1024 N = 1024 maxiters = 5000 tol = 1
+Profile version
+MRM: iters: 5001 residual: 75.6703
+MRM: time sync: 28.8576 time sync (max): 28.8576
+MRM: time matvec: 0.122658 time matvec (max): 0.122658
+MRM: time dot: 8.18395 time dot (max): 9.96292
+MRM: time axpy: 0.0644419 time axpy (max): 0.0656646
+MRM: iters: 5001 resudial: 75.6703
+MRM: Warning! Max Iterations in MRM solver!
+Time: 37.2409
+Error (L2): 1393.97
+Error (C): 1.99993
+Cores & Threads per core &   Mesh  & Time (sec) & Iterations & Error (L2) & Error (C) 
+4 & 1 & 1024 x 1024 & 37.240884 & 5001 & 1393.974755 & 1.999928 
 
-MPI/OpenMP init is ok. procs = 4 threads = 1
-npx = 2 npy = 2 locM = 20 locN = 20
-Laplace Solver, parallel mpi
-M = 40 N = 40 maxiters = 100000
-MRM: iters: 4443 resudial: 9.99392e-07
-Time: 0.124171
-Error (L2): 0.0198566
-Error (C): 0.00126196
+MPI init is ok. procs = 1 threads = 1
+npx = 1 npy = 1 locM = 1024 locN = 1024
+Laplace Solver, MPI/CUDA
+M = 1024 N = 1024 maxiters = 5000 tol = 1
+Profile version
+MRM: iters: 5001 residual: 75.6703
+MRM: time sync: 0.000562685 time sync (max): 0.000562685
+MRM: time matvec: 0.066057 time matvec (max): 0.066057
+MRM: time dot: 11.8759 time dot (max): 11.8759
+MRM: time axpy: 0.0496164 time axpy (max): 0.0496164
+MRM: iters: 5001 resudial: 75.6703
+MRM: Warning! Max Iterations in MRM solver!
+Time: 12.0076
+Error (L2): 1393.97
+Error (C): 1.99993
+Cores & Threads per core &   Mesh  & Time (sec) & Iterations & Error (L2) & Error (C) 
+1 & 1 & 1024 x 1024 & 12.007572 & 5001 & 1393.974755 & 1.999928 
 
-MPI/OpenMP init is ok. procs = 4 threads = 1
-npx = 2 npy = 2 locM = 40 locN = 40
-Laplace Solver, parallel mpi
-M = 80 N = 80 maxiters = 100000
-MRM: iters: 32814 resudial: 9.99961e-07
-Time: 1.67448
-Error (L2): 0.00985994
-Error (C): 0.000316232
-
-MPI/OpenMP init is ok. procs = 4 threads = 1
-npx = 2 npy = 2 locM = 80 locN = 80
-Laplace Solver, parallel mpi
-M = 160 N = 160 maxiters = 1000000
-MRM: iters: 153236 resudial: 9.99992e-07
-Time: 22.0683
-Error (L2): 0.00490447
-Error (C): 7.91249e-05
+COMPARE WITH PURE MPI:
+MPI init is ok. procs = 1 threads = 1
+npx = 1 npy = 1 locM = 1024 locN = 1024
+Laplace Solver, pure mpi
+M = 1024 N = 1024 maxiters = 5000 tol = 1e-06 profile = 1
+MRM: iters: 5001 residual: 75.6703
+MRM: time sync: 0.187792 time sync (max): 0.187792
+MRM: time matvec: 10.8762 time matvec (max): 10.8762
+MRM: time norm: 18.0693 time norm (max): 18.0693
+MRM: time axpy: 9.5183 time axpy (max): 9.5183
+MRM: Warning! Max Iterations in MRM solver!
+Time of solver: 38.6591
+Time of solver (max): 38.6591
+Error (L2): 1393.97
+Error (C): 1.99993
+Cores & Threads per core &   Mesh  & Time (sec) & Iterations & Error (L2) & Error (C) 
+1 & 1 & 1024 x 1024 & 38.659100 & 5001 & 1393.974755 & 1.999928 

@@ -43,6 +43,7 @@ int main(int argc, char** argv)
     MeshVec F(mpitools);
     L.rhs(F);
     F.load_gpu();
+    F.sync();
 
     // Initiation of MRM solver Ax=b, initial guess
     MRM solver(pow(10.0, tol), maxiters);

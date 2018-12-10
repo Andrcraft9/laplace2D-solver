@@ -20,17 +20,21 @@ int MRM::solve_profile(const LaplaceOperator& L, const MeshVec& RHS, MeshVec& X)
     Ar.load_gpu();
     MeshVec zero(mpitools, 0.0);
     zero.load_gpu();
+    zero.sync();
     
     // r = Ax - RHS
     time_loc = mpitools.get_time();
     L.matvec_device(X, RHS, r); 
     time_matvec = time_matvec + (mpitools.get_time() - time_loc);
-    //r.sync();
+    time_loc = mpitools.get_time();
+    r.sync();
+    time_sync = time_sync + (mpitools.get_time() - time_loc);
+    
     // Ar
     time_loc = mpitools.get_time();
     L.matvec_device(r, zero, Ar);
     time_matvec = time_matvec + (mpitools.get_time() - time_loc);
-    
+
     // Compute: (r, r), (Ar, r), (Ar, Ar)
     time_loc = mpitools.get_time();
     std::vector<double> dots = L.dot_general_mesh_device(r, Ar);
@@ -48,13 +52,17 @@ int MRM::solve_profile(const LaplaceOperator& L, const MeshVec& RHS, MeshVec& X)
         time_loc = mpitools.get_time();
         X.axpy_device(-tau, r); 
         time_axpy = time_axpy + (mpitools.get_time() - time_loc);
-        //X.sync();
+        time_loc = mpitools.get_time();
+        X.sync();
+        time_sync = time_sync + (mpitools.get_time() - time_loc);
 
         // r = Ax - RHS
         time_loc = mpitools.get_time();
         L.matvec_device(X, RHS, r); 
         time_matvec = time_matvec + (mpitools.get_time() - time_loc);
-        //r.sync();
+        time_loc = mpitools.get_time();
+        r.sync();
+        time_sync = time_sync + (mpitools.get_time() - time_loc);
         // Ar
         time_loc = mpitools.get_time();
         L.matvec_device(r, zero, Ar);

@@ -28,3 +28,13 @@ MeshVec& MeshVec::axpy_device(double a, const MeshVec& x)
     //cudaDeviceSynchronize();
     return *this;
 }
+
+void MeshVec::load_halo_gpu()
+{
+
+}
+
+void MeshVec::unload_halo_gpu()
+{
+    
+}

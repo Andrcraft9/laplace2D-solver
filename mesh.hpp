@@ -62,7 +62,11 @@ public:
     void load_gpu() { vec_device = vec; }
     // From GPU to CPU
     void unload_gpu() { vec = vec_device; }
-    // From CPU to another CPU
+    // From CPU to GPU, only halo points!
+    void load_halo_gpu();
+    // From GPU to CPU, only halo points!
+    void unload_halo_gpu();
+    // Sync halo points between CPUs
     int sync();
     
     // host vec

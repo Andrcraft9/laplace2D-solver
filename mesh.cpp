@@ -40,57 +40,66 @@ int MeshVec::sync()
 {
     int src[4], dist[4];
 
-    // X+ direction
-    MPI_Cart_shift(mtls.comm(), 0, 1,  src, dist); 
-    // Y+ direction
-    MPI_Cart_shift(mtls.comm(), 1, 1,  src + 1, dist + 1); 
-    // X- direction
-    // MPI_Cart_shift(mtls.comm(), 0, -1, src + 2, dist + 2);
-    src[2] = dist[0];
-    dist[2] = src[0];
-    // Y- direction
-    // MPI_Cart_shift(mtls.comm(), 1, -1, src + 3, dist + 3); 
-    src[3] = dist[1];
-    dist[3] = src[1];
-
-    // X+ direction
-    for(int j = 0; j < mtls.locN(); ++j)
-        sendbuf[j] = (*this)(mtls.locx2(), j + mtls.locy1());
-    direct_sync(src[0], dist[0], sendbuf,  mtls.locN(), recvbuf,  mtls.locN());
-    if (src[0] != MPI_PROC_NULL)
+    if (mtls.procs() > 1)
     {
+        // Unload fron GPU to CPU
+        unload_gpu();
+
+        // X+ direction
+        MPI_Cart_shift(mtls.comm(), 0, 1,  src, dist); 
+        // Y+ direction
+        MPI_Cart_shift(mtls.comm(), 1, 1,  src + 1, dist + 1); 
+        // X- direction
+        // MPI_Cart_shift(mtls.comm(), 0, -1, src + 2, dist + 2);
+        src[2] = dist[0];
+        dist[2] = src[0];
+        // Y- direction
+        // MPI_Cart_shift(mtls.comm(), 1, -1, src + 3, dist + 3); 
+        src[3] = dist[1];
+        dist[3] = src[1];
+
+        // X+ direction
         for(int j = 0; j < mtls.locN(); ++j)
-            (*this)(mtls.bndx1(), j + mtls.locy1()) = recvbuf[j];
-    }
+            sendbuf[j] = (*this)(mtls.locx2(), j + mtls.locy1());
+        direct_sync(src[0], dist[0], sendbuf,  mtls.locN(), recvbuf,  mtls.locN());
+        if (src[0] != MPI_PROC_NULL)
+        {
+            for(int j = 0; j < mtls.locN(); ++j)
+                (*this)(mtls.bndx1(), j + mtls.locy1()) = recvbuf[j];
+        }
 
-    // Y+ direction
-    for(int i = 0; i < mtls.locM(); ++i)
-        sendbuf[i] = (*this)(mtls.locx1() + i, mtls.locy2());
-    direct_sync(src[1], dist[1], sendbuf,  mtls.locM(), recvbuf,  mtls.locM());
-    if (src[1] != MPI_PROC_NULL)
-    {
+        // Y+ direction
         for(int i = 0; i < mtls.locM(); ++i)
-            (*this)(mtls.locx1() + i, mtls.bndy1()) = recvbuf[i];
-    }
+            sendbuf[i] = (*this)(mtls.locx1() + i, mtls.locy2());
+        direct_sync(src[1], dist[1], sendbuf,  mtls.locM(), recvbuf,  mtls.locM());
+        if (src[1] != MPI_PROC_NULL)
+        {
+            for(int i = 0; i < mtls.locM(); ++i)
+                (*this)(mtls.locx1() + i, mtls.bndy1()) = recvbuf[i];
+        }
 
-    // X- direction
-    for(int j = 0; j < mtls.locN(); ++j)
-        sendbuf[j] = (*this)(mtls.locx1(), j + mtls.locy1());
-    direct_sync(src[2], dist[2], sendbuf,  mtls.locN(), recvbuf,  mtls.locN());
-    if (src[2] != MPI_PROC_NULL)
-    {
+        // X- direction
         for(int j = 0; j < mtls.locN(); ++j)
-            (*this)(mtls.bndx2(), j + mtls.locy1()) = recvbuf[j];
-    }
+            sendbuf[j] = (*this)(mtls.locx1(), j + mtls.locy1());
+        direct_sync(src[2], dist[2], sendbuf,  mtls.locN(), recvbuf,  mtls.locN());
+        if (src[2] != MPI_PROC_NULL)
+        {
+            for(int j = 0; j < mtls.locN(); ++j)
+                (*this)(mtls.bndx2(), j + mtls.locy1()) = recvbuf[j];
+        }
 
-    // Y- direction
-    for(int i = 0; i < mtls.locM(); ++i)
-        sendbuf[i] = (*this)(mtls.locx1() + i, mtls.locy1());
-    direct_sync(src[3], dist[3], sendbuf,  mtls.locM(), recvbuf,  mtls.locM());
-    if (src[3] != MPI_PROC_NULL)
-    {
+        // Y- direction
         for(int i = 0; i < mtls.locM(); ++i)
-            (*this)(mtls.locx1() + i, mtls.bndy2()) = recvbuf[i];
+            sendbuf[i] = (*this)(mtls.locx1() + i, mtls.locy1());
+        direct_sync(src[3], dist[3], sendbuf,  mtls.locM(), recvbuf,  mtls.locM());
+        if (src[3] != MPI_PROC_NULL)
+        {
+            for(int i = 0; i < mtls.locM(); ++i)
+                (*this)(mtls.locx1() + i, mtls.bndy2()) = recvbuf[i];
+        }
+
+        // Load from CPU to GPU
+        load_gpu();
     }
 
     return 0;
