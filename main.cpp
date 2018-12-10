@@ -83,6 +83,7 @@ int main(int argc, char** argv)
                mpitools.procs(), mpitools.threads(), M, N, duration, iters, errL2, errC);
     }
 
+/*
     std::stringstream ss;
     ss << mpitools.rank();
     std::string strrank = ss.str();
@@ -92,6 +93,7 @@ int main(int argc, char** argv)
     results.open(fname.c_str());
     results << X;
     results.close();
+*/
 
     mpitools.finalize();
 
