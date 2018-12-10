@@ -239,19 +239,155 @@ __global__ void matvec_kernel(const double *v, const double *f, double *Av,
     Av[k] = cAv - f[k];
 }
 
+struct matvec_functor: public thrust::binary_function<double, int, double>
+{
+    const double *v;
+    const double *f;
+
+    const double hx; 
+    const double hy; 
+    const int M; 
+    const int N;
+    const int inner_x1; 
+    const int inner_x2; 
+    const int inner_y1; 
+    const int inner_y2;
+    const int bnd_x1; 
+    const int bnd_y1;
+
+    matvec_functor(const thrust::device_vector<double> &_v, const thrust::device_vector<double> &_f,
+                   const double _hx, const double _hy, const int _M, const int _N,
+                   const int _inner_x1, const int _inner_x2, const int _inner_y1, const int _inner_y2,
+                   const int _bnd_x1, const int _bnd_y1) 
+    : v(thrust::raw_pointer_cast(_v.data())), f(thrust::raw_pointer_cast(_f.data())),
+      hx(_hx), hy(_hy), M(_M), N(_N), 
+      inner_x1(_inner_x1), inner_x2(_inner_x2), inner_y1(_inner_y1), inner_y2(_inner_y2),
+      bnd_x1(_bnd_x1), bnd_y1(_bnd_y1) {}
+
+    __host__ __device__
+        double operator()(const double& vij, const int& k) const
+        {
+            // MeshVec index, see MeshVec class
+            //int k = (j - bnd_y1) + (i - bnd_x1)*N;
+            int i = (k / N) + bnd_x1;
+            int j = (k % N) + bnd_y1;
+
+            double cAv; // Av value
+
+            double hx2 = hx*hx;
+            double hy2 = hy*hy;
+
+            // Compute Av value
+            if (i >= inner_x1 && i <= inner_x2 && j >= inner_y1 && j <= inner_y2)
+            {
+                // Inner area
+                
+                double vipj  = v[k + N]; // v(i+1, j)
+                double vijp  = v[k + 1]; // v(i, j+1)
+                double vimj  = v[k - N]; // v(i-1, j)
+                double vijm  = v[k - 1]; // v(i, j-1)
+
+                cAv = -1.0/hx2*(vipj - 2*vij + vimj) 
+                      -1.0/hy2*(vijp - 2*vij + vijm);
+            }
+            else if (i == 0 && j == 0)
+            {
+                // Edge point: (X1, Y1)
+                
+                double vipj  = v[k + N]; // v(i+1, j)
+                double vijp  = v[k + 1]; // v(i, j+1)
+
+                cAv = -2.0/hx2*(vipj - vij) 
+                      -2.0/hy2*(vijp - vij);
+            }
+            else if (j == 0)
+            {
+                // Bottom boundary
+                
+                double vipj  = v[k + N]; // v(i+1, j)
+                double vijp  = v[k + 1]; // v(i, j+1)
+                double vimj  = v[k - N]; // v(i-1, j)
+
+                if (i >= inner_x1 && i <= inner_x2)
+                {
+                    cAv = -2.0/hy2*(vijp - vij) 
+                          -1.0/hx2*(vipj - 2*vij + vimj);
+                }
+                else if (i == M-1)
+                {
+                    cAv = -2.0/hy2*(vijp - vij) 
+                          -1.0/hx2*( -2*vij + vimj);
+                }
+            }
+            else if (i == 0)
+            {
+                // Left boundary
+                
+                double vipj  = v[k + N]; // v(i+1, j)
+                double vijp  = v[k + 1]; // v(i, j+1)
+                double vijm  = v[k - 1]; // v(i, j-1)
+
+                if (j >= inner_y1 && j <= inner_y2)
+                {
+                    cAv = -2.0/hx2*(vipj - vij)
+                          -1.0/hy2*(vijp - 2*vij + vijm);
+                }
+                else if (j == N-1)
+                {
+                    cAv = -2.0/hx2*(vipj - vij)
+                          -1.0/hy2*( -2*vij + vijm);
+                }
+            }
+            else if (i == M-1 && j >= inner_y1 && j <= inner_y2)
+            {
+                // Right pre-boundary
+
+                double vijp  = v[k + 1]; // v(i, j+1)
+                double vimj  = v[k - N]; // v(i-1, j)
+                double vijm  = v[k - 1]; // v(i, j-1)
+
+                cAv = -1.0/hx2*( -2*vij + vimj) 
+                      -1.0/hy2*(vijp  - 2*vij + vijm);
+            }
+            else if (j == N-1 && i >= inner_x1 && i <= inner_x2)
+            {
+                // Top pre-boundary
+
+                double vipj  = v[k + N]; // v(i+1, j)
+                double vimj  = v[k - N]; // v(i-1, j)
+                double vijm  = v[k - 1]; // v(i, j-1)
+
+                cAv = -1.0/hx2*(vipj  - 2*vij + vimj) 
+                      -1.0/hy2*( -2*vij + vijm);
+            
+            }
+            else if (i == M-1 && j == N-1)
+            {
+                // Edge point: (X2, Y2)
+                
+                double vimj  = v[k - N]; // v(i-1, j)
+                double vijm  = v[k - 1]; // v(i, j-1)
+
+                cAv = -1.0/hx2*( -2*vij + vimj) 
+                      -1.0/hy2*( -2*vij + vijm);
+            }
+
+            // Update device vector
+            return cAv - f[k];
+        }
+};
+
 void LaplaceOperator::matvec_device(const MeshVec &v, const MeshVec &f, MeshVec &Av) const
 {
     assert(mtls == v.mpitools()); 
     assert(mtls == f.mpitools()); 
     assert(mtls == Av.mpitools()); 
 
-    //return;
-
+/*
+    // CUDA Kernel matvec
     const double *raw_ptr_v = thrust::raw_pointer_cast(v.get_device_vec().data());
     const double *raw_ptr_f = thrust::raw_pointer_cast(f.get_device_vec().data());
     double *raw_ptr_Av = thrust::raw_pointer_cast(Av.get_device_vec().data());
-
-    //return;
 
     dim3 DimBlock(BLOCK_SIZE, BLOCK_SIZE);
     dim3 DimGrid(iDivUp(M, BLOCK_SIZE), iDivUp(N, BLOCK_SIZE));
@@ -261,6 +397,20 @@ void LaplaceOperator::matvec_device(const MeshVec &v, const MeshVec &f, MeshVec 
                                          M, N,
                                          inner_x1, inner_x2, inner_y1, inner_y2,
                                          mtls.bndx1(), mtls.bndy1());
+*/
+
+    // Thrust transform matvec
+    struct matvec_functor mvfunc(v.get_device_vec(), f.get_device_vec(), 
+                                 hx, hy, M, N,
+                                 inner_x1, inner_x2, inner_y1, inner_y2,
+                                 mtls.bndx1(), mtls.bndy1());
+
+    thrust::transform(v.get_device_vec().begin(), v.get_device_vec().end(), 
+                      thrust::make_counting_iterator(0), 
+                      Av.get_device_vec().begin(),
+                      mvfunc);
+
 
     //cudaDeviceSynchronize();
 }
+
