@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 {
     if (argc < 5) 
     {
-        std::cout << "Program needs M, N, maxiters, tol power" << std::endl;
+        std::cout << "Program needs M, N, maxiters, tol power, profile flag (optional)" << std::endl;
         exit(0);
     }
     int profile = 0;
