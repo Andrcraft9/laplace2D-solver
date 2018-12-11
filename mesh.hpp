@@ -20,32 +20,24 @@ private:
     MPITools mtls;
     thrust::host_vector<double> vec; // host data
     thrust::device_vector<double> vec_device; // device data
-    double *sendbuf, *recvbuf;
+
+    // Buffers for communications
+    //send
+    thrust::host_vector<double> sendbuf;
+    thrust::device_vector<double> sendbuf_device;
+    //recv
+    thrust::host_vector<double> recvbuf;
+    thrust::device_vector<double> recvbuf_device;
+    //index
+    //thrust::host_vector<int> indexbuf;
+    //thrust::device_vector<int> indexbuf_device;
 
     int direct_sync(int src, int dist, double *sbuf, int sn, double *rbuf, int rn);
 
 public:
-    MeshVec(MPITools mtls, double val = 0) : mtls(mtls), vec(mtls.bndM() * mtls.bndN())
-    {
-        assert(mtls.initialized());
+    MeshVec(MPITools mtls, double val = 0);
 
-        sendbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
-        recvbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
-
-        for(int i = mtls.bndx1(); i <= mtls.bndx2(); ++i)
-            for(int j = mtls.bndy1(); j <= mtls.bndy2(); ++j)
-                (*this)(i, j) = val;
-    } 
-
-    MeshVec(const MeshVec& v) : mtls(v.mtls), vec(mtls.bndM() * mtls.bndN())
-    {
-        sendbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
-        recvbuf = new double[std::max(mtls.bndM(), mtls.bndN())];
-
-        for(int i = mtls.bndx1(); i <= mtls.bndx2(); ++i)
-            for(int j = mtls.bndy1(); j <= mtls.bndy2(); ++j)
-                (*this)(i, j) = v(i, j);
-    }
+    MeshVec(const MeshVec& v);
     
     MeshVec& operator=(const MeshVec& v)
     {
@@ -92,6 +84,11 @@ public:
         return vec[(j - mtls.bndy1()) + (i - mtls.bndx1())*mtls.bndN()];
     }
 
+    int get_index(int i, int j) const
+    {
+        return (j - mtls.bndy1()) + (i - mtls.bndx1())*mtls.bndN();
+    }
+
     // y = a*x + y, host function
     MeshVec& axpy(double a, const MeshVec& x);
     // y = a*x + y, device function
@@ -99,11 +96,7 @@ public:
 
     friend std::ostream& operator<< (std::ostream& os, const MeshVec& v);
 
-    ~MeshVec()
-    {
-        delete[] sendbuf;
-        delete[] recvbuf;
-    }
+    ~MeshVec() {}
 };
 
 #endif
