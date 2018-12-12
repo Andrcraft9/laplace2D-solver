@@ -29,7 +29,14 @@ int main(int argc, char** argv)
     {
         std::cout << "Laplace Solver, MPI/CUDA" << std::endl;
         std::cout << "M = " << M << " N = " << N << " maxiters = " << maxiters << " tol = " << pow(10.0, tol) << std::endl;
-        std::cout << "Profile version" << std::endl;
+        std::cout << "Version with profiling" << std::endl;
+
+        #ifdef _CUDA_AWARE_MPI_SYNC_
+            std::cout << "using _CUDA_AWARE_MPI_SYNC_" << std::endl;
+        #endif
+        #ifdef _CUDA_KERNEL_MATVEC_
+            std::cout << "using _CUDA_KERNEL_MATVEC_" << std::endl;
+        #endif
     }
     //MPI_Abort(mpitools.comm(), 0);
     //exit(0);

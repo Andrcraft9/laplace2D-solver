@@ -1,53 +1,37 @@
-MPI init is ok. procs = 4 threads = 1
-npx = 2 npy = 2 locM = 512 locN = 512
-Laplace Solver, MPI/CUDA
-M = 1024 N = 1024 maxiters = 5000 tol = 1
-Profile version
-MRM: iters: 5001 residual: 75.6703
-MRM: time sync: 28.8576 time sync (max): 28.8576
-MRM: time matvec: 0.122658 time matvec (max): 0.122658
-MRM: time dot: 8.18395 time dot (max): 9.96292
-MRM: time axpy: 0.0644419 time axpy (max): 0.0656646
-MRM: iters: 5001 resudial: 75.6703
-MRM: Warning! Max Iterations in MRM solver!
-Time: 37.2409
-Error (L2): 1393.97
-Error (C): 1.99993
-Cores & Threads per core &   Mesh  & Time (sec) & Iterations & Error (L2) & Error (C) 
-4 & 1 & 1024 x 1024 & 37.240884 & 5001 & 1393.974755 & 1.999928 
-
 MPI init is ok. procs = 1 threads = 1
-npx = 1 npy = 1 locM = 1024 locN = 1024
+npx = 1 npy = 1 locM = 2048 locN = 2048
 Laplace Solver, MPI/CUDA
-M = 1024 N = 1024 maxiters = 5000 tol = 1
-Profile version
-MRM: iters: 5001 residual: 75.6703
-MRM: time sync: 0.000562685 time sync (max): 0.000562685
-MRM: time matvec: 0.066057 time matvec (max): 0.066057
-MRM: time dot: 11.8759 time dot (max): 11.8759
-MRM: time axpy: 0.0496164 time axpy (max): 0.0496164
-MRM: iters: 5001 resudial: 75.6703
+M = 2048 N = 2048 maxiters = 1000 tol = 1
+Version with profiling
+MRM: iters: 1001 residual: 693.395
+MRM: time sync: 0.00012977 time sync (max): 0.00012977
+MRM: time matvec: 0.0139033 time matvec (max): 0.0139033
+MRM: time dot: 7.6015 time dot (max): 7.6015
+MRM: time axpy: 0.0105275 time axpy (max): 0.0105275
+MRM: iters: 1001 resudial: 693.395
 MRM: Warning! Max Iterations in MRM solver!
-Time: 12.0076
-Error (L2): 1393.97
-Error (C): 1.99993
+Time: 7.68341
+Error (L2): 2879.68
+Error (C): 2
 Cores & Threads per core &   Mesh  & Time (sec) & Iterations & Error (L2) & Error (C) 
-1 & 1 & 1024 x 1024 & 12.007572 & 5001 & 1393.974755 & 1.999928 
+1 & 1 & 2048 x 2048 & 7.683407 & 1001 & 2879.683993 & 2.000000 
 
 COMPARE WITH PURE MPI:
+
 MPI init is ok. procs = 1 threads = 1
-npx = 1 npy = 1 locM = 1024 locN = 1024
+npx = 1 npy = 1 locM = 2048 locN = 2048
 Laplace Solver, pure mpi
-M = 1024 N = 1024 maxiters = 5000 tol = 1e-06 profile = 1
-MRM: iters: 5001 residual: 75.6703
-MRM: time sync: 0.187792 time sync (max): 0.187792
-MRM: time matvec: 10.8762 time matvec (max): 10.8762
-MRM: time norm: 18.0693 time norm (max): 18.0693
-MRM: time axpy: 9.5183 time axpy (max): 9.5183
+M = 2048 N = 2048 maxiters = 1000 tol = 1 profile = 1
+MRM: iters: 1001 residual: 693.395
+MRM: time sync: 0.105429 time sync (max): 0.105429
+MRM: time matvec: 9.40912 time matvec (max): 9.40912
+MRM: time norm: 14.4424 time norm (max): 14.4424
+MRM: time axpy: 8.63306 time axpy (max): 8.63306
 MRM: Warning! Max Iterations in MRM solver!
-Time of solver: 38.6591
-Time of solver (max): 38.6591
-Error (L2): 1393.97
-Error (C): 1.99993
+Time of solver: 32.6122
+Time of solver (max): 32.6122
+Error (L2): 2879.68
+Error (C): 2
 Cores & Threads per core &   Mesh  & Time (sec) & Iterations & Error (L2) & Error (C) 
-1 & 1 & 1024 x 1024 & 38.659100 & 5001 & 1393.974755 & 1.999928 
+1 & 1 & 2048 x 2048 & 32.612155 & 1001 & 2879.683993 & 2.000000 
+

@@ -18,19 +18,18 @@ class MeshVec
 {
 private:
     MPITools mtls;
-    thrust::host_vector<double> vec; // host data
-    thrust::device_vector<double> vec_device; // device data
+    // host data
+    thrust::host_vector<double> vec; 
+    // device data
+    thrust::device_vector<double> vec_device; 
 
     // Buffers for communications
-    //send
+    // for send
     thrust::host_vector<double> sendbuf;
     thrust::device_vector<double> sendbuf_device;
-    //recv
+    // for recv
     thrust::host_vector<double> recvbuf;
     thrust::device_vector<double> recvbuf_device;
-    //index
-    //thrust::host_vector<int> indexbuf;
-    //thrust::device_vector<int> indexbuf_device;
 
     int direct_sync(int src, int dist, double *sbuf, int sn, double *rbuf, int rn);
 
@@ -54,10 +53,6 @@ public:
     void load_gpu() { vec_device = vec; }
     // From GPU to CPU
     void unload_gpu() { vec = vec_device; }
-    // From CPU to GPU, only halo points!
-    void load_halo_gpu();
-    // From GPU to CPU, only halo points!
-    void unload_halo_gpu();
     // Sync halo points between CPUs
     int sync();
     
