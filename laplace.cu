@@ -355,17 +355,20 @@ struct matvec_functor: public thrust::binary_function<double, int, double>
             {
                 // Bottom boundary
                 
-                const double vipj  = v[k + bndN]; // v(i+1, j)
-                const double vijp  = v[k + 1]; // v(i, j+1)
-                const double vimj  = v[k - bndN]; // v(i-1, j)
-
                 if (i >= inner_x1 && i <= inner_x2)
                 {
+                    const double vipj  = v[k + bndN]; // v(i+1, j)
+                    const double vijp  = v[k + 1]; // v(i, j+1)
+                    const double vimj  = v[k - bndN]; // v(i-1, j)
+
                     cAv = -2.0/hy2*(vijp - vij) 
                           -1.0/hx2*(vipj - 2*vij + vimj);
                 }
                 else if (i == M-1)
                 {
+                    const double vijp  = v[k + 1]; // v(i, j+1)
+                    const double vimj  = v[k - bndN]; // v(i-1, j)
+
                     cAv = -2.0/hy2*(vijp - vij) 
                           -1.0/hx2*( -2*vij + vimj);
                 }
@@ -373,18 +376,21 @@ struct matvec_functor: public thrust::binary_function<double, int, double>
             else if (i == 0)
             {
                 // Left boundary
-                
-                const double vipj  = v[k + bndN]; // v(i+1, j)
-                const double vijp  = v[k + 1]; // v(i, j+1)
-                const double vijm  = v[k - 1]; // v(i, j-1)
 
                 if (j >= inner_y1 && j <= inner_y2)
                 {
+                    const double vipj  = v[k + bndN]; // v(i+1, j)
+                    const double vijp  = v[k + 1]; // v(i, j+1)
+                    const double vijm  = v[k - 1]; // v(i, j-1)
+
                     cAv = -2.0/hx2*(vipj - vij)
                           -1.0/hy2*(vijp - 2*vij + vijm);
                 }
                 else if (j == N-1)
                 {
+                    const double vipj  = v[k + bndN]; // v(i+1, j)
+                    const double vijm  = v[k - 1]; // v(i, j-1)
+
                     cAv = -2.0/hx2*(vipj - vij)
                           -1.0/hy2*( -2*vij + vijm);
                 }

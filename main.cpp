@@ -35,7 +35,7 @@ int main(int argc, char** argv)
             std::cout << "using _CUDA_AWARE_MPI_SYNC_" << std::endl;
         #endif
         #ifdef _CUDA_KERNEL_MATVEC_
-            std::cout << "using _CUDA_KERNEL_MATVEC_" << std::endl;
+            std::cout << "using _CUDA_KERNEL_MATVEC_ (unstable for now, don't use it pls)" << std::endl;
         #endif
     }
     //MPI_Abort(mpitools.comm(), 0);
