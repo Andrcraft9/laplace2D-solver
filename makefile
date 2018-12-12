@@ -8,7 +8,7 @@ ARCH = sm_60
 # _CUDA_AWARE_MPI_SYNC_  : use  CUDA-Aware MPI for communications (sync call)
 #
 # You can use any of this features by adding option: -D <define>
-FLAGS = -O3
+FLAGS = -O3 -std=c++11
 
 ultra:
 	$(GPU_COMP) $(FLAGS) -arch=$(ARCH) -o lapsol --compiler-bindir $(HOST_COMP) main.cpp mpitools.cpp mesh.cpp mesh.cu laplace.cpp laplace.cu solver.cpp
