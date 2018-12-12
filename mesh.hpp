@@ -30,24 +30,44 @@ private:
     // for recv
     thrust::host_vector<double> recvbuf;
     thrust::device_vector<double> recvbuf_device;
+    
+    // Host Additional buffers, indexes for gather/scatter
+    // X+
+    thrust::host_vector<double> isendbuf_XP;
+    thrust::host_vector<double> irecvbuf_XP;
+    // X-
+    thrust::host_vector<double> isendbuf_XM;
+    thrust::host_vector<double> irecvbuf_XM;
+    // Y+
+    thrust::host_vector<double> isendbuf_YP;
+    thrust::host_vector<double> irecvbuf_YP;
+    // Y-
+    thrust::host_vector<double> isendbuf_YM;
+    thrust::host_vector<double> irecvbuf_YM;
+    // Device Additional buffers, indexes for gather/scatter
+    // X+
+    thrust::device_vector<double> isendbuf_device_XP;
+    thrust::device_vector<double> irecvbuf_device_XP;
+    // X-
+    thrust::device_vector<double> isendbuf_device_XM;
+    thrust::device_vector<double> irecvbuf_device_XM;
+    // Y+
+    thrust::device_vector<double> isendbuf_device_YP;
+    thrust::device_vector<double> irecvbuf_device_YP;
+    // Y-
+    thrust::device_vector<double> isendbuf_device_YM;
+    thrust::device_vector<double> irecvbuf_device_YM;
+
+    void init_sync_buffers();
 
     int direct_sync(int src, int dist, double *sbuf, int sn, double *rbuf, int rn);
 
+    // No copy pls
+    MeshVec(const MeshVec& v);
+    MeshVec& operator=(const MeshVec& v);
+
 public:
     MeshVec(MPITools mtls, double val = 0);
-
-    MeshVec(const MeshVec& v);
-    
-    MeshVec& operator=(const MeshVec& v)
-    {
-        assert(mtls == v.mtls);
-
-        for(int i = mtls.bndx1(); i <= mtls.bndx2(); ++i)
-            for(int j = mtls.bndy1(); j <= mtls.bndy2(); ++j)
-                (*this)(i, j) = v(i, j);
-
-        return *this;
-    }
 
     // From CPU to GPU
     void load_gpu() { vec_device = vec; }
