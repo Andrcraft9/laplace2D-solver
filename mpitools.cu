@@ -74,6 +74,13 @@ int MPITools::init(int *argc, char ***argv, int m, int n)
     return  0;
 }
 
+double MPITools::get_time()
+{
+    cudaThreadSynchronize();
+    //cudaDeviceSynchronize();
+    return MPI_Wtime();
+}
+
 bool MPITools::operator==(const MPITools &m) const
 {
     return comm_ == m.comm_ && M_ == m.M_ && N_ == m.N_ && locM_ == m.locM_ && locN_ == m.locN_;

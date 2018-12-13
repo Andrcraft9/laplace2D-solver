@@ -78,10 +78,7 @@ public:
     bool TB() const { return TB_; }
     bool BB() const { return BB_; }
 
-    double get_time()
-    {
-        return MPI_Wtime();
-    }
+    double get_time();
 
     double sync_time(double t)
     {
