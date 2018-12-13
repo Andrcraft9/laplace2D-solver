@@ -19,6 +19,9 @@ private:
     int npx_, npy_; // Procs grid
     int px_, py_; // Procs coords
     int M_, N_; // Total size
+
+    int gpus_; 
+    int rank_gpu_;
     
     // Local area
     int locM_, locN_;

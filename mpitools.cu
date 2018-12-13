@@ -54,10 +54,12 @@ int MPITools::init(int *argc, char ***argv, int m, int n)
     if (py_ == 0) BB_ = true;
     if (py_ == npy_ - 1) TB_ = true;
     
+    cudaGetDeviceCount(&gpus_);
+
     // Info 
     if (rank_ == 0)
     {
-        std::cout << "MPI init is ok. procs = " << procs_ << " threads = " << threads_ << std::endl;
+        std::cout << "MPI init is ok. procs = " << procs_ << " threads = " << threads_ << " gpus = " << gpus_ << std::endl;
         std::cout << "npx = " << npx_ << " npy = " << npy_ << " locM = " << locM_ << " locN = " << locN_ << std::endl;
     }
     /*
