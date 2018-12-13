@@ -14,10 +14,10 @@ ultra:
 	$(GPU_COMP) $(FLAGS) -arch=$(ARCH) -o lapsol --compiler-bindir $(HOST_COMP) main.cpp mpitools.cu mesh.cpp mesh.cu laplace.cpp laplace.cu solver.cpp
 
 ultra_CAMS:
-	$(GPU_COMP) $(FLAGS) -D _CUDA_AWARE_MPI_SYNC_ -arch=$(ARCH) -o lapsol --compiler-bindir $(HOST_COMP) main.cpp mpitools.cpp mesh.cpp mesh.cu laplace.cpp laplace.cu solver.cpp
+	$(GPU_COMP) $(FLAGS) -D _CUDA_AWARE_MPI_SYNC_ -arch=$(ARCH) -o lapsol --compiler-bindir $(HOST_COMP) main.cpp mpitools.cu mesh.cpp mesh.cu laplace.cpp laplace.cu solver.cpp
 
 #ultra_CKM:
-#	$(GPU_COMP) $(FLAGS) -D _CUDA_KERNEL_MATVEC_ -arch=$(ARCH) -o lapsol --compiler-bindir $(HOST_COMP) main.cpp mpitools.cpp mesh.cpp mesh.cu laplace.cpp laplace.cu solver.cpp
+#	$(GPU_COMP) $(FLAGS) -D _CUDA_KERNEL_MATVEC_ -arch=$(ARCH) -o lapsol --compiler-bindir $(HOST_COMP) main.cpp mpitools.cu mesh.cpp mesh.cu laplace.cpp laplace.cu solver.cpp
 
 clean:
 	rm *.o
